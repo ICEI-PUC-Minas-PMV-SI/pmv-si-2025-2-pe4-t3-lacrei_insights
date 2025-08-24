@@ -6,7 +6,7 @@
 
 `SEMESTRE: 4º`
 
-BI para Gestão e Impacto Social da saúde de pessoas LGBTQIAPN+
+BI para Gestão do Impacto da empresa na saúde de pessoas LGBTQIAPN+
 
 ## Integrantes
 
