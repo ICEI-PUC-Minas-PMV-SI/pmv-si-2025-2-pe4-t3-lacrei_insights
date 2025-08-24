@@ -1,46 +1,159 @@
-# Introdução
+# 📊 Projeto de Business Intelligence – Lacrei Saúde
 
-O projeto de extensão desenvolvido pelo curso de Sistemas de Informação – EAD da PUC Minas, em parceria com a ONG Bicho Loko, tem como objetivo a criação de um sistema de Business Intelligence (BI) voltado à organização, análise e integração de informações essenciais para a gestão da instituição.
+## 📌 Introdução  
 
-Fundada em 2015, a ONG atua no resgate, acolhimento temporário, promoção de adoções responsáveis, campanhas de castração e ações de conscientização da sociedade. Apesar de seu impacto significativo, enfrenta grandes dificuldades relacionadas à falta de centralização de dados, o que prejudica a agilidade na tomada de decisões e no estabelecimento de parcerias estratégicas. O BI permitirá consolidar informações sobre animais resgatados, voluntários, adotantes, eventos de adoção, parcerias e campanhas.
+O presente projeto tem como objetivo desenvolver uma solução de **Business Intelligence** para a plataforma **Lacrei Saúde**, que atua na conexão de pessoas LGBTQIAPN+ a profissionais de saúde inclusivos.  
 
-Com isso, será possível gerar relatórios e indicadores em tempo real, facilitando o acesso rápido às informações e proporcionando maior eficiência na gestão. A relevância do projeto está na contribuição direta para o fortalecimento da ONG e, indiretamente, para o bem-estar animal e para a comunidade local, uma vez que o controle populacional, a redução do abandono e a conscientização social são fatores fundamentais para a melhoria da qualidade de vida coletiva. Assim, a iniciativa beneficia tanto a comunidade acadêmica, que vivenciará a prática de desenvolvimento tecnológico aplicado a um problema real, quanto a comunidade externa, que terá à disposição uma ferramenta de apoio essencial à sustentabilidade de suas ações.
+A proposta contempla a construção de um **Data Warehouse (DW)**, de um **Data Mart temático** e de **dashboards interativos** no Power BI, com vistas à transformação de dados operacionais em análises estratégicas que qualifiquem a gestão, ampliem a transparência e subsidiem a formulação de políticas públicas e institucionais.  
 
-## Diagnóstico da Situação Problema
+A iniciativa justifica-se pela necessidade de sistematizar e analisar informações referentes ao acesso, ao engajamento e à qualidade do atendimento destinado à população LGBTQIAPN+, a qual historicamente enfrenta barreiras no sistema de saúde.  
 
-A ONG Bicho Loko, fundada em 2015, nasceu do esforço coletivo de protetores independentes que buscavam estruturar suas ações em defesa dos animais. Seu trabalho tem como eixos principais a castração, a adoção responsável e a conscientização social. Entretanto, a instituição enfrenta grandes dificuldades em gerir suas atividades, em especial pela ausência de ferramentas digitais de organização e centralização de dados.
+Estudos apontam que parte significativa dessa população evita procurar serviços de saúde por receio de práticas discriminatórias, resultando em afastamento e menor adesão a cuidados preventivos. Soma-se a esse cenário a insuficiente capacitação dos profissionais de saúde em lidar com demandas específicas, como o processo de transição de pessoas transgênero e o reconhecimento do nome social. Além disso, persiste a concentração das ações em torno de pautas relacionadas ao HIV/AIDS e a outras infecções sexualmente transmissíveis, o que contribui para a estigmatização e a limitação do conhecimento acerca da diversidade de necessidades dessa população.  
 
-Atualmente, os registros de animais, adotantes, voluntários e termos de responsabilidade são realizados de forma manual e física, dificultando a recuperação rápida das informações e atrasando processos decisivos. Essa lacuna gera entraves tanto no relacionamento com parceiros quanto no planejamento de eventos e campanhas.
+Por meio da solução proposta, será possível:  
+- Mensurar a distribuição de profissionais por região e especialidade;  
+- Identificar lacunas de acesso;  
+- Avaliar a experiência do usuário;  
+- Monitorar indicadores de retenção;  
+- Analisar a efetividade de campanhas de engajamento.  
 
-Além disso, o abandono de animais em Belo Horizonte e região metropolitana é um problema crescente: segundo a Organização Mundial da Saúde (OMS), estima-se que no Brasil existam mais de 30 milhões de animais em situação de abandono, sendo aproximadamente 10 milhões de gatos e 20 milhões de cães. Em grandes capitais, como Belo Horizonte, estudos locais indicam que milhares de cães e gatos vivem em situação de rua, agravando problemas de saúde pública e maus-tratos. A ausência de dados organizados pela ONG compromete o mapeamento do impacto real de suas ações, limitando o alcance de novas parcerias e investimentos.
+A relevância deste projeto manifesta-se em duas dimensões complementares:  
+- **Acadêmica**: ao disponibilizar uma base de dados estruturada que viabilize pesquisas científicas sobre saúde inclusiva e equidade social;  
+- **Social**: ao contribuir para a consolidação de práticas de cuidado em saúde orientadas pelos princípios de inclusão, representatividade e segurança, assegurando às pessoas LGBTQIAPN+ o direito a um atendimento digno e respeitoso.  
 
-## Objetivos
+**Principais ações previstas:**  
+1. Levantamento e integração de dados oriundos da plataforma;  
+2. Construção do **Data Warehouse** e do **Data Mart**;  
+3. Desenvolvimento de indicadores e dashboards no Power BI;  
+4. Capacitação de usuários para o uso das ferramentas desenvolvidas;  
+5. Avaliação sistemática dos resultados para subsidiar políticas públicas e o aprimoramento de práticas institucionais.  
 
-O presente trabalho tem como objetivo geral desenvolver um sistema de Business Intelligence (BI) para a ONG Bicho Loko, com vistas a centralizar e analisar informações essenciais para a gestão de suas atividades, promovendo maior eficiência organizacional e impacto social.
+---
 
-Para o alcance deste objetivo, foram estabelecidos os seguintes objetivos específicos:
+## 🔍 Diagnóstico da Situação-Problema  
 
-- Mapear e estruturar as informações atualmente utilizadas pela ONG: animais, adotantes, voluntários, parcerias e eventos;
-- Desenvolver um banco de dados centralizado para armazenar as informações coletadas;
-- Criar painéis interativos de BI para visualização e análise de dados em tempo real;
-- Fornecer indicadores estratégicos que apoiem a tomada de decisão da ONG;
-- Contribuir para a capacitação da ONG no uso de tecnologias de informação para gestão;
-- Fortalecer o vínculo entre a universidade e a comunidade por meio de um projeto extensionista de impacto social.
+Diversos estudos nacionais e internacionais evidenciam que pessoas LGBTQIAPN+ enfrentam desigualdades persistentes no acesso aos serviços de saúde, decorrentes tanto de práticas discriminatórias quanto da insuficiente capacitação dos profissionais para lidar com demandas específicas dessa população.  
 
-## Justificativa
+Pesquisas realizadas por instituições de referência, como a **Fiocruz (2019)** e a **UNAIDS (2021)**, indicam que mais de **60% das pessoas trans** relataram experiências de discriminação em contextos de atendimento em saúde, o que contribui para o afastamento dessa população dos serviços formais de cuidado.  
 
-A relevância social e acadêmica do projeto está alicerçada em dois eixos principais: o fortalecimento da ONG Bicho Loko e a formação cidadã dos estudantes do curso de Sistemas de Informação.
+Além disso, observa-se a carência de profissionais inclusivos em diversas regiões do Brasil, o que reforça desigualdades territoriais no acesso a práticas de saúde dignas e seguras. Esse cenário é agravado pela predominância de ações historicamente voltadas ao enfrentamento do **HIV/AIDS** e de outras **ISTs**. Embora fundamentais, tais iniciativas acabam restringindo a compreensão das necessidades da população LGBTQIAPN+, invisibilizando outras dimensões, como:  
+- Saúde mental;  
+- Cuidados hormonais;  
+- Processo transexualizador;  
+- Reconhecimento do nome social;  
+- Garantia de ambientes de acolhimento.  
 
-Para a comunidade externa, o projeto contribui para a organização de dados que permitirão maior eficiência nas campanhas de castração, nos processos de adoção e na captação de parcerias. Para a comunidade acadêmica, representa a aplicação prática do conhecimento adquirido em disciplinas de tecnologia da informação, análise de dados e gestão de sistemas, fortalecendo a interdisciplinaridade entre teoria e prática. Além disso, o projeto está em consonância com a Política de Extensão Universitária da PUC Minas (2006) e com o Plano de Desenvolvimento Institucional (2012), que enfatizam a indissociabilidade entre ensino, pesquisa e extensão, bem como o compromisso social da universidade.
+A **Lacrei Saúde** emerge, nesse contexto, como uma iniciativa que busca atuar como ponte entre usuários LGBTQIAPN+ e profissionais de saúde comprometidos com práticas inclusivas, promovendo representatividade, acolhimento e equidade.  
 
-O BI a ser desenvolvido terá caráter inovador por articular dados antes dispersos em um sistema de análise e visualização dinâmica, servindo também como objeto de pesquisa futura para estudantes interessados em gestão de dados aplicada ao terceiro setor.
+No entanto, a organização ainda não dispõe de uma estrutura analítica suficientemente robusta para mensurar de forma integrada e contínua os resultados de suas ações. Em especial, carece de instrumentos que permitam monitorar:  
 
-## Público-Alvo
+- **A jornada digital dos usuários** e a taxa de conversão em consultas, possibilitando compreender pontos de maior atrito ou abandono;  
+- **A cobertura de profissionais por localidade**, identificando desigualdades regionais no acesso;  
+- **Os níveis de satisfação e retenção de usuários**, fundamentais para avaliar a qualidade percebida;  
+- **Os resultados de campanhas de engajamento e parcerias institucionais**, mensurando sua efetividade e alcance.  
 
-Caracterização do público-alvo: O projeto atenderá diretamente a ONG Bicho Loko, seus voluntários (fixos e pontuais) e protetores independentes que atuam em parceria. Indiretamente, beneficiará a comunidade de Belo Horizonte e região metropolitana, especialmente famílias adotantes e a população impactada pelas campanhas de castração e conscientização.
+A ausência de indicadores consolidados e integrados limita a capacidade da Lacrei Saúde de avaliar com precisão o **impacto social** de sua atuação, dificultando tanto a identificação de lacunas estratégicas quanto a comunicação transparente de seus resultados a parceiros, financiadores e sociedade civil.  
 
-Critérios para seleção/inclusão do público-alvo: Serão considerados como público-alvo os grupos que participam diretamente das atividades da ONG e aqueles que são beneficiados pelas ações realizadas, como adotantes e protetores independentes.
+Diante disso, torna-se imperativo o desenvolvimento de uma solução de **Business Intelligence** capaz de estruturar, organizar e analisar dados operacionais, oferecendo subsídios concretos para a tomada de decisão, a qualificação da gestão e a consolidação da plataforma como referência em saúde inclusiva.  
 
-Número de pessoas atendidas (beneficiários diretos): Cerca de 30 voluntários fixos e pontuais, além de aproximadamente 200 adotantes por ano.
+---
 
-Número de pessoas atendidas (beneficiários indiretos): Estima-se que mais de 2.000 pessoas sejam impactadas anualmente pelas campanhas de conscientização e castração promovidas pela ONG.
+## 🎯 Objetivo Geral  
+
+Desenvolver uma solução de **Business Intelligence** que integre e sistematize os dados da plataforma **Lacrei Saúde** em um **Data Warehouse** e em um **Data Mart temático**, viabilizando a criação de **painéis interativos no Power BI**.  
+
+Tal solução buscará monitorar, de forma contínua e estruturada, o **acesso**, o **engajamento** e a **qualidade dos serviços** ofertados à comunidade **LGBTQIAPN+**, subsidiando a **gestão estratégica**, a **avaliação de impacto social** e a **formulação de políticas públicas inclusivas**.  
+
+---
+
+## 🎯 Objetivos Específicos  
+
+- **Realizar o levantamento, mapeamento e padronização das fontes de dados operacionais da plataforma**, assegurando a integridade, a consistência e a confiabilidade das informações a serem analisadas;  
+
+- **Projetar e estruturar o Data Warehouse e o Data Mart temático**, organizando os dados em conformidade com as boas práticas de modelagem multidimensional, de modo a possibilitar análises históricas e comparativas;  
+
+- **Definir e operacionalizar indicadores-chave de desempenho (KPIs)** relacionados ao acesso, à cobertura de profissionais, ao engajamento de usuários e à qualidade do atendimento, com base em critérios validados por literatura científica e pelas necessidades institucionais da Lacrei Saúde;  
+
+- **Desenvolver dashboards e relatórios analíticos no Power BI**, direcionados a diferentes públicos-alvo — gestores, pesquisadores e parceiros institucionais — promovendo transparência, tomada de decisão orientada por dados e disseminação de informações qualificadas;  
+
+- **Capacitar as equipes envolvidas no uso das ferramentas analíticas**, por meio de treinamentos e materiais de apoio, visando à apropriação das tecnologias e ao fortalecimento da cultura organizacional orientada por dados;  
+
+- **Estabelecer um processo de monitoramento e avaliação periódica dos resultados obtidos**, a fim de identificar boas práticas, apontar lacunas e propor melhorias contínuas tanto nos aspectos técnicos da solução quanto na efetividade das ações de saúde inclusiva;  
+
+- **Favorecer a produção acadêmica e científica**, ao disponibilizar uma base estruturada de dados que subsidie pesquisas relacionadas à saúde da população LGBTQIAPN+, à equidade em saúde e à formulação de políticas públicas de inclusão.  
+
+---
+
+## 📖 Justificativa  
+
+A presente proposta fundamenta-se em sua dupla relevância: **social** e **acadêmica**.  
+O projeto contribui para a promoção da **equidade em saúde da população LGBTQIAPN+**, historicamente marcada por situações de exclusão, discriminação e estigmatização nos serviços de saúde.  
+
+Ao estruturar e analisar dados relacionados ao acesso, à qualidade e ao engajamento em práticas de cuidado inclusivas, a iniciativa possibilitará a produção de evidências que orientem a melhoria das condições de acesso e o fortalecimento de **políticas públicas** que assegurem o direito universal à saúde, em consonância com os princípios do **Sistema Único de Saúde (SUS)** e com a perspectiva de **direitos humanos**.  
+
+Sob a ótica acadêmica, o projeto oferece uma **base de dados estruturada** que poderá subsidiar pesquisas interdisciplinares em áreas como:  
+
+- **Saúde pública**  
+- **Ciência de dados**  
+- **Sociologia**  
+- **Direitos humanos**  
+- **Políticas públicas**  
+
+Além disso, dialoga diretamente com a **Política de Extensão Universitária da PUC Minas (2006)**, ao articular ensino, pesquisa e extensão em torno de um problema social concreto, e com o **Plano de Desenvolvimento Institucional (2012)**, ao fomentar ações voltadas para a cidadania, a justiça social e a inclusão de populações historicamente marginalizadas.  
+
+---
+
+## 🎓 Integração com Ensino, Pesquisa e Extensão  
+
+A proposta integra-se às atividades de ensino e pesquisa em diferentes dimensões:  
+
+1. **A experiência extensionista como objeto de problematização**  
+   - A atuação junto à Lacrei Saúde permitirá evidenciar lacunas no acesso e na qualidade dos serviços de saúde voltados à população LGBTQIAPN+, transformando a prática em fonte de reflexão crítica e de produção de conhecimento.  
+
+2. **Subsídio metodológico para a construção do Data Warehouse**  
+   - O diagnóstico quantitativo e qualitativo dos dados disponíveis possibilitará a definição de critérios de integração, padronização e análise, garantindo rigor científico ao processo de modelagem da solução de Business Intelligence.  
+
+3. **Produção de conhecimento acessível à sociedade**  
+   - Os resultados obtidos serão sistematizados em relatórios técnicos, indicadores e painéis públicos, ampliando a transparência institucional e fortalecendo a *accountability* perante parceiros, órgãos de fomento e a sociedade civil.  
+
+4. **Estímulo à pesquisa futura e à interdisciplinaridade**  
+   - A disponibilização de uma base estruturada e confiável de dados favorecerá a realização de investigações posteriores em áreas diversas, incluindo estudos de avaliação de impacto social, análises de equidade em saúde, desenvolvimento de metodologias analíticas aplicadas à ciência de dados e pesquisas sobre políticas inclusivas de direitos humanos.  
+
+5. **Fortalecimento da formação discente e docente**  
+   - Ao articular ensino, pesquisa e extensão, o projeto proporciona um espaço privilegiado de aprendizagem, no qual estudantes e professores poderão aplicar conhecimentos teóricos em contextos práticos, contribuindo para sua formação crítica, ética e cidadã.  
+
+---
+
+## 👥 Público-Alvo
+
+- **Pessoas LGBTQIAPN+ em todo o território nacional**, que buscam atendimento em saúde inclusivo, seguro e livre de discriminação, representando o núcleo prioritário da intervenção.  
+- **Profissionais de saúde cadastrados na plataforma Lacrei Saúde**, que atuam em distintas especialidades médicas e áreas correlatas, validados quanto à adesão a práticas inclusivas e respeitosas.  
+- **Gestores institucionais e organizações parceiras**, especialmente aquelas que atuam em políticas públicas de saúde, diversidade e direitos humanos, interessadas em dados e indicadores para subsidiar estratégias e tomadas de decisão.  
+
+---
+
+### 1️⃣ Critérios de Inclusão do Público-Alvo  
+
+- **Usuários da plataforma Lacrei Saúde** que realizam buscas ou consultas por atendimento inclusivo;  
+- **Profissionais de saúde validados** pela plataforma quanto ao compromisso ético e técnico com a população LGBTQIAPN+;  
+- **Gestores, pesquisadores e parceiros institucionais** com interesse em utilizar os dados produzidos pelo projeto como subsídio para ações de planejamento, monitoramento e avaliação em saúde inclusiva.  
+
+---
+
+### 2️⃣ Estimativa de Beneficiários Diretos  
+
+Considerando a base atual de usuários e projeções de crescimento anual, estima-se o atendimento direto a aproximadamente:  
+
+- **800 usuários da plataforma** que buscam serviços de saúde inclusivos;  
+- **90 profissionais de saúde validados** pela Lacrei Saúde, distribuídos em diferentes especialidades e regiões do Brasil.  
+
+---
+
+### 3️⃣ Estimativa de Beneficiários Indiretos  
+
+De forma indireta, o projeto deverá impactar cerca de **1.000 pessoas**, entre as quais:  
+
+- **Familiares e redes de apoio** dos usuários que acessam a plataforma;  
+- **Organizações sociais** que atuam na defesa dos direitos da população LGBTQIAPN+ e na promoção da equidade em saúde;  
+- **Comunidade acadêmica e científica**, que poderá utilizar os dados estruturados e analisados como insumo para pesquisas e para a formulação de políticas públicas.  
+
