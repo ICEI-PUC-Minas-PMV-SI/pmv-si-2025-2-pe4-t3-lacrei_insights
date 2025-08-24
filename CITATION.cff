@@ -1,0 +1,44 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: BI para Gestão e Impacto Social em Defesa Animal
+message: >-
+  BI para Gestão e Impacto Social em Defesa Animal: Parceria
+  com a ONG Bicho Loko
+type: software
+authors:
+  - given-names: Amanda Magalhães
+    family-names: Silva
+  - given-names: Ana Carolina Fernandes
+    name-particle: de
+    family-names: Assis
+  - given-names: Gustavo Torres
+    name-particle: da Rocha
+    family-names: Castro
+  - given-names: João Pedro Silva
+    name-particle: de
+    family-names: Oliveira
+  - given-names: Jose Alexandre Santos
+    family-names: Barbosa
+  - given-names: Milleny Ellen Jodas
+    family-names: Ferreira
+  - given-names: Viviane Aparecida Campos
+    name-particle: de Oliveira
+    family-names: Pertence
+  - affiliation: PUC Minas
+    given-names: Maria Ines Lage
+    name-particle: de
+    family-names: Paula
+repository-code: >-
+  https://github.com/orgs/ICEI-PUC-Minas-PMV-SI/teams/bicho_loko
+keywords:
+  - ONG
+  - Animais
+  - Defesa Animal
+  - Impacto Social
+  - Sustentabilidade
+  - Business Intelligence (BI)
+  - Extensão Universitária
+version: 1.0.0
+date-released: '2025-08-23'
