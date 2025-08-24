@@ -6,17 +6,17 @@
 
 `SEMESTRE: 4º`
 
-BI para Gestão e Impacto Social em Defesa Animal: Parceria com a ONG Bicho Loko
+BI para Gestão e Impacto Social da saúde de pessoas LGBTQIAPN+
 
 ## Integrantes
 
-- Amanda Magalhães Silva
-- Ana Carolina Fernandes de Assis
-- Gustavo Torres da Rocha Castro
-- João Pedro Silva de Oliveira
-- Jose Alexandre Santos Barbosa
-- Milleny Ellen Jodas Ferreira
-- Viviane Aparecida Campos de Oliveira Pertence
+- Sarah Cesar Martins dos Santos
+- Nico
+- Luini
+- Ryann
+- Lucas
+- João
+
 
 ## Orientador
 
