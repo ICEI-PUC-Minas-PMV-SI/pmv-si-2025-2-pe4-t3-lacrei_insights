@@ -13,7 +13,7 @@ BI para Gestão do Impacto da empresa na saúde de pessoas LGBTQIAPN+
 - Sarah Cesar Martins dos Santos
 - Nico
 - Luini de Freitas Salles
-- Ryann
+- Ryann Victor de Almeida Parreira
 - Lucas
 - João
 
