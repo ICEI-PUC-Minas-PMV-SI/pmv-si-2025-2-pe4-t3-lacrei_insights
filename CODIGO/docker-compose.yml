@@ -1,0 +1,12 @@
+services:
+  flask_dw_lacrei:
+    build: .
+    container_name: flask_dw_lacrei
+    ports:
+      - "5006:5000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always
+    command: python run.py

@@ -1,0 +1,14 @@
+# Ignorar arquivos sensíveis e temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Ignorar ambiente virtual (se estiver na pasta do projeto)
+venv/
+
+# Ignorar arquivos temporários
+*.db
+*.sqlite3
+.DS_Store
