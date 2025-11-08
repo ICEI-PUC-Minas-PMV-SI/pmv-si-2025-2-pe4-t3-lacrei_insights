@@ -14,7 +14,7 @@ BI para Gestão do Impacto da empresa na saúde de pessoas LGBTQIAPN+
 - Nico
 - Luini de Freitas Salles
 - Ryann Victor de Almeida Parreira
-- Lucas
+- Lucas Warley Matos Nascimento
 - João
 
 
