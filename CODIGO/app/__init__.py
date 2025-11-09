@@ -20,8 +20,11 @@ def create_app():
     proteger_apidocs(app)
 
     # Rotas: etl
-    from app.routes.etl.staging import bp_staging
-    app.register_blueprint(bp_staging)
+    from app.routes.etl.staging2 import bp_staging2
+    app.register_blueprint(bp_staging2)
+
+    #from app.routes.dashboard import bp_dashboard
+    #app.register_blueprint(bp_dashboard)
 
     # Rotas: power bi
     #from app.routes.powerbi.upload_bi import bp_powerbi  
