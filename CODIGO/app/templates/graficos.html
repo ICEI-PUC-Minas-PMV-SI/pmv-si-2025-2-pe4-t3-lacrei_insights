@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <title>Gráficos - MART</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS externo -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/graficos.css') }}">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- JS externo -->
+    <script defer src="{{ url_for('static', filename='js/graficos.js') }}"></script>
+</head>
+
+<body>
+    <h1>Visão MART (lacreisaude_mart)</h1>
+    <p class="subtitle">
+        Fonte: tabelas <code>patients</code>, <code>patient_disability</code>,
+        <code>professionals</code> e <code>professional_appointments</code>
+    </p>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Pacientes por mês (Total) e % Ativos</h3>
+            <canvas id="cPatientsMonth"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Faixa etária (mês mais recente)</h3>
+            <p class="subtitle" id="lbAgeMonth"></p>
+            <canvas id="cPatientsAge"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Tipos de deficiência (top 10 – mês mais recente)</h3>
+            <p class="subtitle" id="lbDisabMonth"></p>
+            <canvas id="cDisability"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Top 10 especialidades (atendimentos) & média de nota</h3>
+            <canvas id="cProfSpec"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Atendimentos por mês & taxa de conclusão</h3>
+            <canvas id="cProfSeries"></canvas>
+        </div>
+    </div>
+
+    <script id="datasets-json" type="application/json">
+  {{ datasets | tojson | safe }}
+</script>
+</body>
+
+</html>
