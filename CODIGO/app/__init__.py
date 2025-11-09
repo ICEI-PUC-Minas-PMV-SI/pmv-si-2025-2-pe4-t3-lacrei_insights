@@ -23,11 +23,11 @@ def create_app():
     from app.routes.etl.staging2 import bp_staging2
     app.register_blueprint(bp_staging2)
 
-    #from app.routes.dashboard import bp_dashboard
-    #app.register_blueprint(bp_dashboard)
+    from app.routes.dashboard import bp_dashboard
+    app.register_blueprint(bp_dashboard)
 
     # Rotas: power bi
-    #from app.routes.powerbi.upload_bi import bp_powerbi  
-    #app.register_blueprint(bp_powerbi)
+    from app.routes.powerbi.upload_bi import bp_upload_bi  
+    app.register_blueprint(bp_upload_bi)
 
     return app
