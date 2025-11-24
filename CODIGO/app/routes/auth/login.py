@@ -12,15 +12,19 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+
         if username == 'admin' and password == '123456':
             session['logged_in'] = True
             session['username'] = username
             session['login_time'] = datetime.utcnow().isoformat()
-            return redirect('/apidocs/')
-        else:
-            return render_template('login.html', error='Usuário ou senha inválidos.')
-    
+
+            # 👉 ALTERAÇÃO AQUI: redireciona ao dashboard
+            return redirect('/dashboard')
+
+        return render_template('login.html', error='Usuário ou senha inválidos.')
+
     return render_template('login.html')
+
 
 @bp_auth.route('/logout')
 def logout():
@@ -28,19 +32,21 @@ def logout():
     return redirect('/login')
 
 
-# Middleware: Protege /apidocs/
+# Middleware para proteger apidocs
 def proteger_apidocs(app):
     @app.before_request
     def verificar_apidocs():
         caminho = request.path
 
-        if request.path == '/':
+        # Redireciona raiz para login
+        if caminho == '/':
             return redirect('/login')
 
         # libera rotas públicas
         if caminho.startswith('/static') or caminho in ['/login', '/logout']:
             return
 
+        # protege apenas /apidocs/*
         if caminho.startswith('/apidocs'):
             if not session.get('logged_in'):
                 return redirect('/login')
@@ -52,11 +58,13 @@ def proteger_apidocs(app):
                 if datetime.utcnow() - login_time > timedelta(minutes=SESSION_TIMEOUT_MINUTES):
                     session.clear()
                     return redirect('/login')
-                
+
     @app.after_request
     def adicionar_cabecalhos_cache(response):
         if request.path.startswith('/apidocs') or request.path.startswith('/login'):
-            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+            response.headers['Cache-Control'] = (
+                'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+            )
             response.headers['Pragma'] = 'no-cache'
             response.headers['Expires'] = '-1'
         return response
