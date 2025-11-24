@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lacrei Saúde Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,10 +28,7 @@
             text-align: center;
         }
 
-        .header {
-            margin-bottom: 40px;
-        }
-
+        .header { margin-bottom: 40px; }
         .header-icon {
             display: inline-flex;
             align-items: center;
@@ -49,30 +41,14 @@
             font-size: 30px;
         }
 
-        .header-icon::before {
-            content: "📊";
-            font-size: 30px;
-        }
+        .header-icon::before { content: "📊"; font-size: 30px; }
 
-        h1 {
-            color: #1f2937;
-            margin-bottom: 10px;
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            font-size: 16px;
-            margin-bottom: 40px;
-        }
+        h1 { color: #1f2937; margin-bottom: 10px; font-size: 32px; font-weight: 700; }
+        .subtitle { color: #6b7280; font-size: 16px; margin-bottom: 40px; }
 
         .buttons-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
+            display: flex; gap: 20px; justify-content: center;
+            margin-bottom: 40px; flex-wrap: wrap;
         }
 
         .btn {
@@ -91,288 +67,153 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .btn-atualizar {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
         }
-
         .btn-grafico {
             background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
             color: white;
         }
 
-        .btn-icon {
-            font-size: 20px;
-        }
+        .btn-icon { font-size: 20px; }
 
         .message {
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;
+            font-size: 14px; display: none;
+        }
+        .message.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: block; }
+        .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: block; }
+        .message.info { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; display: block; }
+
+        /* CONTAINER DO METABASE */
+        #metabaseContainer {
+            width: 100%;
+            margin-top: 30px;
             display: none;
         }
 
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-            display: block;
-        }
-
-        .message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-            display: block;
-        }
-
-        .message.info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #3b82f6;
-            display: block;
-        }
-
-        .chart-container {
-            margin-top: 40px;
-            padding: 30px;
-            background: #f9fafb;
-            border-radius: 16px;
-            display: none;
-        }
-
-        .chart-container.active {
-            display: block;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            height: 400px;
-            margin-bottom: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            color: #1f2937;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .logout-link {
-            color: #3b82f6;
-            text-decoration: none;
-            font-size: 14px;
-            margin-top: 20px;
-            display: inline-block;
-            transition: color 0.3s;
-        }
-
-        .logout-link:hover {
-            color: #2563eb;
-            text-decoration: underline;
+        #metabaseIframe {
+            width: 100%;
+            height: 1200px;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <div class="header">
-            <div class="header-icon"></div>
-            <h1>Lacrei Saúde Dashboard</h1>
-            <p class="subtitle">Gerencie seus dados e visualize insights</p>
-        </div>
-
-        <div id="message" class="message"></div>
-
-        <div class="buttons-container">
-            <button class="btn btn-atualizar" id="btnAtualizar" onclick="atualizarBancoDados()">
-                <span class="btn-icon">🔄</span>
-                <span>Atualizar Banco de Dados</span>
-            </button>
-
-            <button class="btn btn-grafico" id="btnGrafico" onclick="mostrarGrafico()">
-                <span class="btn-icon">📈</span>
-                <span>Mostrar Gráfico</span>
-            </button>
-        </div>
-
-        <div class="chart-container" id="chartContainer">
-            <h2 style="color: #1f2937; margin-bottom: 20px;">Gráfico de Distribuição por Tipo de Perfil</h2>
-            <div class="chart-wrapper">
-                <canvas id="myChart"></canvas>
-            </div>
-            <div class="stats-grid" id="statsGrid"></div>
-        </div>
-
-        <a href="/logout" class="logout-link">Sair</a>
+<div class="dashboard-container">
+    <div class="header">
+        <div class="header-icon"></div>
+        <h1>Lacrei Saúde Dashboard</h1>
+        <p class="subtitle">Gerencie seus dados e visualize insights</p>
     </div>
 
-    <script>
-        let chart = null;
+    <div id="message" class="message"></div>
 
-        function showMessage(text, type) {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = `message ${type}`;
-            setTimeout(() => {
-                messageEl.className = 'message';
-            }, 5000);
-        }
+    <div class="buttons-container">
+        <button class="btn btn-atualizar" id="btnAtualizar" onclick="atualizarBancoDados()">
+            <span class="btn-icon">🔄</span>
+            <span>Atualizar Banco de Dados</span>
+        </button>
 
-        function setButtonLoading(buttonId, loading) {
-            const btn = document.getElementById(buttonId);
-            if (loading) {
-                btn.disabled = true;
-                const icon = btn.querySelector('.btn-icon');
-                icon.innerHTML = '<span class="loading"></span>';
-            } else {
-                btn.disabled = false;
-                const icon = btn.querySelector('.btn-icon');
-                if (buttonId === 'btnAtualizar') {
-                    icon.textContent = '🔄';
-                } else {
-                    icon.textContent = '📈';
-                }
+        <button class="btn btn-grafico" id="btnGrafico" onclick="mostrarGrafico()">
+            <span class="btn-icon">📈</span>
+            <span>Mostrar Gráfico</span>
+        </button>
+    </div>
+
+    <!-- AQUI VAI O METABASE -->
+    <div id="metabaseContainer">
+        <iframe 
+            id="metabaseIframe"
+            src=""
+            allowtransparency="true">
+        </iframe>
+    </div>
+
+    <a href="/logout" class="logout-link">Sair</a>
+</div>
+
+<script>
+    let iframeLoaded = false;
+
+    function showMessage(text, type) {
+        const msg = document.getElementById('message');
+        msg.textContent = text;
+        msg.className = `message ${type}`;
+        setTimeout(() => msg.className = 'message', 5000);
+    }
+
+    function setButtonLoading(id, loading) {
+        const btn = document.getElementById(id);
+        const icon = btn.querySelector('.btn-icon');
+        btn.disabled = loading;
+        icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? '🔄' : '📈');
+    }
+
+    async function atualizarBancoDados() {
+        setButtonLoading('btnAtualizar', true);
+        showMessage('Atualizando banco de dados...', 'info');
+
+        try {
+            const resp = await fetch('/upload/staging');
+            const data = await resp.json();
+
+            if (!resp.ok || data.sucesso === false) {
+                showMessage(data.mensagem || 'Erro ao atualizar.', 'error');
+                return;
             }
+
+            showMessage('ETL concluído com sucesso!', 'success');
+
+        } catch (e) {
+            showMessage('Erro: ' + e.message, 'error');
+        } finally {
+            setButtonLoading('btnAtualizar', false);
         }
+    }
 
+    async function mostrarGrafico() {
+        setButtonLoading('btnGrafico', true);
+        showMessage('Carregando gráficos do Metabase…', 'info');
 
-        async function atualizarBancoDados() {
-            setButtonLoading('btnAtualizar', true);
-            showMessage('Atualizando banco de dados...', 'info');
+        try {
+            // Chama seu pipeline BI
+            await fetch('/upload/bi', { method: 'POST' });
 
-            try {
-                const resp = await fetch('/upload/staging', {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+            // Quando concluir, mostra o iframe do Metabase
+            const iframe = document.getElementById("metabaseIframe");
+            iframe.src = "http://localhost:3000/public/dashboard/edefb48d-1a91-423a-a048-803b6688c976";
 
-                const data = await resp.json();
+            document.getElementById("metabaseContainer").style.display = "block";
 
-                // Se a rota retornou exception formatada
-                if (!resp.ok || data.sucesso === false && !data.resumo) {
-                    const msg = data?.mensagem || 'Erro ao atualizar banco de dados';
-                    showMessage(msg, 'error');
-                    return;
-                }
+            showMessage("Gráfico carregado com sucesso!", "success");
 
-                // Temos resumo por etapa/tabela
-                const falhas = (data.resumo || []).filter(r => r.ok === false);
-                const okTudo = data.sucesso === true && falhas.length === 0;
-
-                if (okTudo) {
-                    const totalIns = (data.resumo || [])
-                        .map(r => r.inseridos || 0)
-                        .reduce((a, b) => a + b, 0);
-                    const totalUpd = (data.resumo || [])
-                        .map(r => r.atualizados || 0)
-                        .reduce((a, b) => a + b, 0);
-
-                    showMessage(
-                        `ETL concluído com sucesso. Inseridos: ${totalIns}, Atualizados: ${totalUpd}.`,
-                        'success'
-                    );
-                } else {
-                    // monta um sumário curto dos erros
-                    const detalhes = falhas
-                        .slice(0, 4) // evita mensagem gigante
-                        .map(f => `• ${f.tabela}: ${f.mensagem || 'falha'}`)
-                        .join(' | ');
-
-                    showMessage(
-                        `ETL executado com falhas. Verifique: ${detalhes}` +
-                        (falhas.length > 4 ? ` | (+${falhas.length - 4} itens)` : ''),
-                        'error'
-                    );
-                }
-            } catch (e) {
-                showMessage('Erro ao conectar com o servidor: ' + e.message, 'error');
-            } finally {
-                setButtonLoading('btnAtualizar', false);
-            }
+        } catch (e) {
+            showMessage("Erro ao carregar o dashboard: " + e.message, "error");
+        } finally {
+            setButtonLoading('btnGrafico', false);
         }
+    }
+</script>
 
-        async function mostrarGrafico() {
-            setButtonLoading('btnGrafico', true);
-            showMessage('Preparando gráficos…', 'info');
-
-            try {
-                const resp = await fetch('/upload/bi', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                // tenta ler JSON, mas não quebra se vier vazio
-                let data = null;
-                try { data = await resp.json(); } catch { }
-
-                // ✅ use somente booleano minúsculo em JS
-                if (!resp.ok || (data && data.sucesso !== true)) {
-                    const msg = (data && data.mensagem) || 'Erro ao preparar os gráficos.';
-                    showMessage(msg, 'error');
-                    return;
-                }
-
-                // tudo certo -> abre a página dos gráficos
-                window.location.href = '/bi/graficos';
-            } catch (e) {
-                showMessage('Erro ao conectar com o servidor: ' + e.message, 'error');
-            } finally {
-                setButtonLoading('btnGrafico', false);
-            }
-        }
-    </script>
 </body>
-
 </html>
