@@ -19,22 +19,22 @@ def _rodar_etl_mart(conn):
 
     # ---------------------------------------------------------------------
     # 1) MART: patients
-    #     PK: (period_month, age_group, gender_identity, sexual_orientation, pronoun)
+    #     PK: (period_month, age_group, gender_identity, sexual_orientation)
     # ---------------------------------------------------------------------
     conn.execute(text(f"""
         CREATE TABLE IF NOT EXISTS {MART_SCHEMA}.patients (
             period_month DATE NOT NULL,
             age_group VARCHAR(50),
-            pronoun VARCHAR(50),
             gender_identity VARCHAR(100),
             sexual_orientation VARCHAR(100),
+            ethnic_group VARCHAR(255),
             total_patients INT,
             active_patients INT,
             inactive_patients INT,
             active_percentage NUMERIC(5,2),
             growth_rate NUMERIC(5,2),
             CONSTRAINT mart_patient_pk
-                PRIMARY KEY (period_month, age_group, gender_identity, sexual_orientation, pronoun)
+            PRIMARY KEY (period_month, age_group, gender_identity, sexual_orientation, ethnic_group)
         );
     """))
 
@@ -54,8 +54,8 @@ def _rodar_etl_mart(conn):
                     END
                 END                                             AS age_group,
                 COALESCE(p.gender_identity, 'N/I')              AS gender_identity,
-                COALESCE(p.pronoun, 'N/I')                      AS pronoun,
                 COALESCE(p.sexual_orientation, 'N/I')           AS sexual_orientation,
+                COALESCE(p.ethnic_group, 'N/I')                     AS ethnic_group,
                 COALESCE(p.is_active, false)                    AS is_active
             FROM lacreisaude_model.dim_lacreisaude_patient p
         ),
@@ -64,8 +64,8 @@ def _rodar_etl_mart(conn):
                 period_month,
                 age_group,
                 gender_identity,
-                pronoun,
                 sexual_orientation,
+                ethnic_group,
                 COUNT(*) FILTER (WHERE patient_sk IS NOT NULL)                AS total_patients,
                 SUM(CASE WHEN is_active THEN 1 ELSE 0 END)                    AS active_patients,
                 SUM(CASE WHEN NOT is_active THEN 1 ELSE 0 END)                AS inactive_patients
@@ -91,8 +91,8 @@ def _rodar_etl_mart(conn):
                 a.period_month,
                 a.age_group,
                 a.gender_identity,
-                a.pronoun,
                 a.sexual_orientation,
+                a.ethnic_group,
                 a.total_patients,
                 a.active_patients,
                 a.inactive_patients,
@@ -107,14 +107,14 @@ def _rodar_etl_mart(conn):
         )
         INSERT INTO {MART_SCHEMA}.patients
         (
-            period_month, age_group, pronoun, gender_identity, sexual_orientation,
+            period_month, age_group, gender_identity, sexual_orientation, ethnic_group,
             total_patients, active_patients, inactive_patients, active_percentage, growth_rate
         )
         SELECT
-            period_month, age_group, pronoun, gender_identity, sexual_orientation,
+            period_month, age_group, gender_identity, sexual_orientation, ethnic_group,
             total_patients, active_patients, inactive_patients, active_percentage, growth_rate
         FROM joined
-        ON CONFLICT (period_month, age_group, gender_identity, sexual_orientation, pronoun) DO UPDATE SET
+        ON CONFLICT (period_month, age_group, gender_identity, sexual_orientation, ethnic_group) DO UPDATE SET
             total_patients    = EXCLUDED.total_patients,
             active_patients   = EXCLUDED.active_patients,
             inactive_patients = EXCLUDED.inactive_patients,
@@ -176,13 +176,11 @@ def _rodar_etl_mart(conn):
     conn.execute(text(f"""
         CREATE TABLE IF NOT EXISTS {MART_SCHEMA}.professionals (
             professional_sk INTEGER PRIMARY KEY,
-            pronoun VARCHAR(255),
             sexual_orientation VARCHAR(255),
             ethnic_group VARCHAR(255),
             specialty VARCHAR(255),
             state VARCHAR(255),
             profile_status VARCHAR(255),
-            profile_type VARCHAR(255),
             active BOOLEAN,
             total_appointments INTEGER,
             avg_feedback_rating NUMERIC(4,2)
@@ -196,8 +194,6 @@ def _rodar_etl_mart(conn):
                 p.profile_status,
                 p.active,
                 p.state,
-                NULL::varchar                      AS profile_type,       -- não temos na dim_professional
-                p.pronoun,
                 p.sexual_orientation,
                 p.ethnic_group,
                 p.specialty
@@ -221,18 +217,16 @@ def _rodar_etl_mart(conn):
         )
         INSERT INTO {MART_SCHEMA}.professionals
         (
-            professional_sk, pronoun, sexual_orientation, ethnic_group, specialty, state,
-            profile_status, profile_type, active, total_appointments, avg_feedback_rating
+            professional_sk, sexual_orientation, ethnic_group, specialty, state,
+            profile_status, active, total_appointments, avg_feedback_rating
         )
         SELECT
             p.professional_sk,
-            p.pronoun,
             p.sexual_orientation,
             p.ethnic_group,
             p.specialty,
             p.state,
             p.profile_status,
-            p.profile_type,
             p.active,
             COALESCE(a.total_appointments, 0)                         AS total_appointments,
             ROUND(COALESCE(f.avg_feedback_rating, 0), 2)              AS avg_feedback_rating
@@ -240,13 +234,11 @@ def _rodar_etl_mart(conn):
         LEFT JOIN appointments a USING (professional_sk)
         LEFT JOIN feedbacks   f USING (professional_sk)
         ON CONFLICT (professional_sk) DO UPDATE SET
-            pronoun              = EXCLUDED.pronoun,
             sexual_orientation   = EXCLUDED.sexual_orientation,
             ethnic_group         = EXCLUDED.ethnic_group,
             specialty            = EXCLUDED.specialty,
             state                = EXCLUDED.state,
             profile_status       = EXCLUDED.profile_status,
-            profile_type         = EXCLUDED.profile_type,
             active               = EXCLUDED.active,
             total_appointments   = EXCLUDED.total_appointments,
             avg_feedback_rating  = EXCLUDED.avg_feedback_rating;
@@ -289,6 +281,7 @@ def _rodar_etl_mart(conn):
               ON d_cr.date_id = f.created_date_id
             LEFT JOIN lacreisaude_model.dim_lacreisaude_professional dp
               ON dp.professional_id = f.professional_id
+            WHERE f.professional_id IS NOT NULL
         ),
         agg AS (
             SELECT
