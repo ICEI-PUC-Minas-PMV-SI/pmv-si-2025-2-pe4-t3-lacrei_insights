@@ -178,6 +178,7 @@ def _rodar_etl_mart(conn):
             professional_sk INTEGER PRIMARY KEY,
             sexual_orientation VARCHAR(255),
             ethnic_group VARCHAR(255),
+            gender_identity VARCHAR(255),
             specialty VARCHAR(255),
             state VARCHAR(255),
             profile_status VARCHAR(255),
@@ -196,6 +197,7 @@ def _rodar_etl_mart(conn):
                 p.state,
                 p.sexual_orientation,
                 p.ethnic_group,
+                p.gender_identity,
                 p.specialty
             FROM lacreisaude_model.dim_lacreisaude_professional p
         ),
@@ -217,13 +219,14 @@ def _rodar_etl_mart(conn):
         )
         INSERT INTO {MART_SCHEMA}.professionals
         (
-            professional_sk, sexual_orientation, ethnic_group, specialty, state,
+            professional_sk, sexual_orientation, ethnic_group, gender_identity, specialty, state,
             profile_status, active, total_appointments, avg_feedback_rating
         )
         SELECT
             p.professional_sk,
             p.sexual_orientation,
             p.ethnic_group,
+            p.gender_identity,
             p.specialty,
             p.state,
             p.profile_status,
@@ -236,6 +239,7 @@ def _rodar_etl_mart(conn):
         ON CONFLICT (professional_sk) DO UPDATE SET
             sexual_orientation   = EXCLUDED.sexual_orientation,
             ethnic_group         = EXCLUDED.ethnic_group,
+            gender_identity      = EXCLUDED.gender_identity,
             specialty            = EXCLUDED.specialty,
             state                = EXCLUDED.state,
             profile_status       = EXCLUDED.profile_status,
@@ -323,5 +327,53 @@ def _rodar_etl_mart(conn):
             avg_waiting_time        = EXCLUDED.avg_waiting_time,
             created_at              = EXCLUDED.created_at;
     """))
+
+
+     # ---------------------------------------------------------------------
+    # 5) MART: professional_disability
+    #     PK: (period_month, disability_type)
+
+    conn.execute(text(f"""
+        CREATE TABLE IF NOT EXISTS {MART_SCHEMA}.professional_disability (
+            period_month DATE NOT NULL,
+            disability_type VARCHAR(255) NOT NULL,
+            total_professionals INT,
+            active_professionals INT,
+            inactive_professionals INT,
+            CONSTRAINT mart_professional_disability_pk
+                PRIMARY KEY (period_month, disability_type)
+        );
+    """))
+
+    conn.execute(text(f"""
+        WITH expanded AS (
+            SELECT
+                DATE_TRUNC('month', p.created_at)::date           AS period_month,
+                TRIM(UNNEST(COALESCE(p.disability_type, ARRAY[]::text[]))) AS disability_type,
+                COALESCE(p.active, false)                      AS is_active
+            FROM lacreisaude_model.dim_lacreisaude_professional p
+            WHERE p.disability_type IS NOT NULL
+        ),
+        aggregated AS (
+            SELECT
+                period_month,
+                disability_type,
+                COUNT(*)                                           AS total_professionals,
+                SUM(CASE WHEN is_active THEN 1 ELSE 0 END)         AS active_professionals,
+                SUM(CASE WHEN NOT is_active THEN 1 ELSE 0 END)     AS inactive_professionals
+            FROM expanded
+            GROUP BY 1,2
+        )
+        INSERT INTO {MART_SCHEMA}.professional_disability
+        (
+            period_month, disability_type, total_professionals, active_professionals, inactive_professionals
+        )
+        SELECT period_month, disability_type, total_professionals, active_professionals, inactive_professionals
+        FROM aggregated
+        ON CONFLICT (period_month, disability_type) DO UPDATE SET
+            total_professionals      = EXCLUDED.total_professionals,
+            active_professionals     = EXCLUDED.active_professionals,
+            inactive_professionals   = EXCLUDED.inactive_professionals;
+    """))       
 
     return {"ok": True, "msg": f"Data Mart atualizada no schema {MART_SCHEMA}."}

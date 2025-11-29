@@ -10,7 +10,7 @@ from datetime import datetime
 bp_staging1 = Blueprint('upload_staging1', __name__)
 engine = get_engine()
 SOURCE_DATABASE_URL = os.getenv('SOURCE_DATABASE_URL')
-SOURCE_SCHEMA = os.getenv('SOURCE_SCHEMA', 'lacreisaude-relacional')
+SOURCE_SCHEMA = os.getenv('SOURCE_SCHEMA')
 source_engine = None
 if SOURCE_DATABASE_URL:
     source_engine = create_engine(SOURCE_DATABASE_URL)
