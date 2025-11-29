@@ -3,154 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lacrei Saúde Dashboard</title>
-
+    <title>Dashboard - Lacrei Saúde</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green: #008067;
+            --green-dark: #006955;
+            --mint: #f4fbf7;
+            --text: #1f2d3d;
+            --muted: #54626a;
+            --border: #d6e6df;
+            --card: #ffffff;
+            --shadow: 0 12px 28px rgba(0,0,0,0.08);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+            background: var(--mint);
+            color: var(--text);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
 
-        .dashboard-container {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 50px;
-            width: 100%;
+        .page {
             max-width: 1200px;
-            text-align: center;
+            margin: 0 auto;
+            padding: 32px 24px 48px;
         }
 
-        .header { margin-bottom: 40px; }
-        .header-icon {
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #0b78b5, #11a698);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #10b981, #3b82f6, #ef4444);
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .pill {
+            padding: 10px 16px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--muted);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .pill.logout {
+            background: var(--green);
+            color: #fff;
+            border: none;
+            box-shadow: 0 10px 20px rgba(0,128,103,0.15);
+        }
+
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
             font-size: 30px;
+            letter-spacing: -0.6px;
+            color: var(--green);
+            margin-bottom: 8px;
         }
 
-        .header-icon::before { content: "📊"; font-size: 30px; }
+        .hero p { color: var(--muted); line-height: 1.6; }
 
-        h1 { color: #1f2937; margin-bottom: 10px; font-size: 32px; font-weight: 700; }
-        .subtitle { color: #6b7280; font-size: 16px; margin-bottom: 40px; }
-
-        .buttons-container {
-            display: flex; gap: 20px; justify-content: center;
-            margin-bottom: 40px; flex-wrap: wrap;
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
         }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .card p { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
 
         .btn {
-            padding: 16px 32px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            min-width: 220px;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            gap: 8px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            background: var(--green);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(0,128,103,0.18);
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+            width: 100%;
         }
 
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .btn-atualizar {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-        }
-        .btn-grafico {
-            background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%);
-            color: white;
-        }
-
-        .btn-icon { font-size: 20px; }
+        .btn:hover { transform: translateY(-1px); background: var(--green-dark); box-shadow: 0 14px 30px rgba(0,105,85,0.2); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .message {
-            padding: 15px 20px; border-radius: 10px; margin-bottom: 20px;
-            font-size: 14px; display: none;
-        }
-        .message.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: block; }
-        .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: block; }
-        .message.info { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; display: block; }
-
-        /* CONTAINER DO METABASE */
-        #metabaseContainer {
-            width: 100%;
-            margin-top: 30px;
             display: none;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            font-weight: 600;
+            margin-bottom: 16px;
         }
+        .message.success { display: block; background: #e7f7f1; border-color: #aad6c9; color: #0f8d6c; }
+        .message.error { display: block; background: #ffecee; border-color: #ffb1b7; color: #b9253a; }
+        .message.info { display: block; background: #e9f3ff; border-color: #b8d9ff; color: #1e62b5; }
 
+        #metabaseContainer { margin-top: 18px; display: none; }
         #metabaseIframe {
             width: 100%;
-            height: 1200px;
+            height: 1100px;
             border: none;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
         }
 
         .loading {
-            display: inline-block;
-            width: 20px; height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+            border: 3px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-
 <body>
-<div class="dashboard-container">
-    <div class="header">
-        <div class="header-icon"></div>
-        <h1>Lacrei Saúde Dashboard</h1>
-        <p class="subtitle">Gerencie seus dados e visualize insights</p>
+    <div class="page">
+        <header>
+            <div class="brand">
+                <div class="brand-logo">LS</div>
+                <span>Lacrei Saúde</span>
+            </div>
+            <div class="nav-actions">
+                <a class="pill" href="/apidocs">Swagger</a>
+                <a class="pill logout" href="/logout">Sair</a>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Painel Lacrei Saúde</h1>
+            <p>Execute as rotinas de ETL e acompanhe os dashboards da Lacrei Saúde.</p>
+        </section>
+
+        <div id="message" class="message"></div>
+
+        <section class="actions">
+            <div class="card">
+                <h3>Atualizar Banco de Dados</h3>
+                <p>Roda o ETL da staging 01 para staging 02 e atualiza os dados do mart.</p>
+                <button class="btn" id="btnAtualizar" onclick="atualizarBancoDados()">
+                    <span class="btn-icon">ETL</span>
+                    <span>Rodar ETL</span>
+                </button>
+            </div>
+
+            <div class="card">
+                <h3>Ver Dashboard</h3>
+                <p>Carrega o Metabase com os KPIs de experiência e atendimento.</p>
+                <button class="btn" id="btnGrafico" onclick="mostrarGrafico()">
+                    <span class="btn-icon">BI</span>
+                    <span>Abrir Metabase</span>
+                </button>
+            </div>
+        </section>
+
+        <div id="metabaseContainer">
+            <iframe id="metabaseIframe" src="" allowtransparency="true"></iframe>
+        </div>
     </div>
-
-    <div id="message" class="message"></div>
-
-    <div class="buttons-container">
-        <button class="btn btn-atualizar" id="btnAtualizar" onclick="atualizarBancoDados()">
-            <span class="btn-icon">🔄</span>
-            <span>Atualizar Banco de Dados</span>
-        </button>
-
-        <button class="btn btn-grafico" id="btnGrafico" onclick="mostrarGrafico()">
-            <span class="btn-icon">📈</span>
-            <span>Mostrar Gráfico</span>
-        </button>
-    </div>
-
-    <!-- AQUI VAI O METABASE -->
-    <div id="metabaseContainer">
-        <iframe 
-            id="metabaseIframe"
-            src=""
-            allowtransparency="true">
-        </iframe>
-    </div>
-
-    <a href="/logout" class="logout-link">Sair</a>
-</div>
 
 <script>
     let iframeLoaded = false;
@@ -166,7 +240,7 @@
         const btn = document.getElementById(id);
         const icon = btn.querySelector('.btn-icon');
         btn.disabled = loading;
-        icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? '🔄' : '📈');
+        icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? 'ETL' : 'BI');
     }
 
     async function atualizarBancoDados() {
@@ -182,7 +256,7 @@
                 return;
             }
 
-            showMessage('ETL concluído com sucesso!', 'success');
+            showMessage('ETL concluido com sucesso!', 'success');
 
         } catch (e) {
             showMessage('Erro: ' + e.message, 'error');
@@ -193,27 +267,20 @@
 
     async function mostrarGrafico() {
         setButtonLoading('btnGrafico', true);
-        showMessage('Carregando gráficos do Metabase…', 'info');
+        showMessage('Carregando graficos do Metabase...', 'info');
 
         try {
-            // Chama seu pipeline BI
             await fetch('/upload/bi', { method: 'POST' });
-
-            // Quando concluir, mostra o iframe do Metabase
-            const iframe = document.getElementById("metabaseIframe");
-            iframe.src = "http://localhost:3000/public/dashboard/edefb48d-1a91-423a-a048-803b6688c976";
-
-            document.getElementById("metabaseContainer").style.display = "block";
-
-            showMessage("Gráfico carregado com sucesso!", "success");
-
+            const iframe = document.getElementById('metabaseIframe');
+            iframe.src = 'http://localhost:3000/public/dashboard/edefb48d-1a91-423a-a048-803b6688c976';
+            document.getElementById('metabaseContainer').style.display = 'block';
+            showMessage('Grafico carregado com sucesso!', 'success');
         } catch (e) {
-            showMessage("Erro ao carregar o dashboard: " + e.message, "error");
+            showMessage('Erro ao carregar o dashboard: ' + e.message, 'error');
         } finally {
             setButtonLoading('btnGrafico', false);
         }
     }
 </script>
-
 </body>
 </html>
