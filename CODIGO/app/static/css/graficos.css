@@ -1,90 +1,96 @@
-/* Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --green: #008067;
+  --green-dark: #006955;
+  --mint: #f4fbf7;
+  --text: #1f2d3d;
+  --muted: #54626a;
+  --border: #d6e6df;
+  --card: #ffffff;
+  --shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
 
-/* Fonte + degradê do login (sem containers que mudem o layout) */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  background: var(--mint);
+  color: var(--text);
   min-height: 100vh;
-  color: #222;
-  /* preserva o espaçamento do seu layout original */
-  padding: 16px;
+  padding: 0 16px 48px;
 }
 
-/* Título/subtítulo no estilo do login */
-.page-title {
-  margin-bottom: 8px;
-  font-size: 28px;
+.topbar {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 22px 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand { display: inline-flex; align-items: center; gap: 12px; }
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #0b78b5, #11a698);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
   font-weight: 700;
-  color: #764ba2; /* roxo do login */
-  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
 }
 
-.page-title .light {
-  font-weight: 600;
-  color: rgba(118, 75, 162, 0.8);
+.brand-name { font-weight: 700; letter-spacing: -0.2px; color: var(--green); }
+.brand-sub { font-size: 12px; color: var(--muted); }
+
+.breadcrumbs { color: var(--muted); font-weight: 600; font-size: 13px; }
+
+.page { max-width: 1200px; margin: 0 auto; }
+
+.hero {
+  margin: 12px 0 20px;
+  padding: 22px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
 }
 
-.subtitle {
-  color: #eee;                   /* melhor contraste sobre o degradê */
-  margin-top: -6px;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
+.eyebrow { text-transform: uppercase; color: var(--muted); font-size: 11px; letter-spacing: 1px; margin-bottom: 6px; }
+.hero h1 { font-size: 30px; color: var(--green); letter-spacing: -0.5px; margin-bottom: 8px; }
+.lead { color: var(--muted); line-height: 1.6; }
 
-/* Grid: igual ao seu original */
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
-  margin-top: 20px;
+  gap: 18px;
 }
 
 @media (min-width: 1100px) {
   .grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* Cards: bordas arredondadas e sombra no padrão do login */
 .card {
-  background: #fff;
-  border-radius: 12px;                   /* igual ao seu antigo, mas arredondado estilo login */
-  border: 2px solid #f1f1f6;             /* borda clara como no login */
-  padding: 16px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-  transition: transform .15s ease, box-shadow .15s ease;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow);
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(0,0,0,0.10);
-}
+.card h3 { margin-bottom: 10px; font-size: 17px; color: var(--text); }
+.subtitle { color: var(--muted); margin: -4px 0 10px; font-size: 13px; }
 
-.card h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.1rem;
-  color: #333;
-}
+canvas { max-width: 100%; height: 320px; }
 
-/* Canvas com a mesma altura de antes */
-canvas {
-  max-width: 100%;
-  height: 300px;
-}
-
-/* <code> discreto */
 code {
-  background: #f7f7fb;
-  border: 1px solid #eee;
+  background: #eef7f2;
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 2px 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  color: #444;
-}
-
-/* Subtítulos internos dos cards */
-.subtitle.small {
-  color: #666;
-  margin-top: -6px;
-  margin-bottom: 8px;
+  color: var(--green-dark);
 }
