@@ -1,56 +1,65 @@
 <!doctype html>
 <html lang="pt-br">
-
 <head>
     <meta charset="utf-8">
-    <title>Gráficos - MART</title>
+    <title>Graficos - Lacrei Saúde</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSS externo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/graficos.css') }}">
-
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- JS externo -->
     <script defer src="{{ url_for('static', filename='js/graficos.js') }}"></script>
 </head>
 
 <body>
-    <h1>Visão MART (lacreisaude_mart)</h1>
-    <p class="subtitle">
-        Fonte: tabelas <code>patients</code>, <code>patient_disability</code>,
-        <code>professionals</code> e <code>professional_appointments</code>
-    </p>
-
-    <div class="grid">
-        <div class="card">
-            <h3>Pacientes por mês (Total) e % Ativos</h3>
-            <canvas id="cPatientsMonth"></canvas>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-logo">LS</div>
+            <div>
+                <div class="brand-name">Lacrei Saúde</div>
+                <div class="brand-sub">Visao de indicadores</div>
+            </div>
         </div>
+        <div class="breadcrumbs">Home > Mart</div>
+    </header>
 
-        <div class="card">
-            <h3>Faixa etária (mês mais recente)</h3>
-            <p class="subtitle" id="lbAgeMonth"></p>
-            <canvas id="cPatientsAge"></canvas>
-        </div>
+    <main class="page">
+        <section class="hero">
+            <p class="eyebrow">Dados consolidados</p>
+            <h1>Graficos MART</h1>
+            <p class="lead">Visualize pacientes, profissionais e atendimentos com a identidade do site oficial.</p>
+        </section>
 
-        <div class="card">
-            <h3>Tipos de deficiência (top 10 – mês mais recente)</h3>
-            <p class="subtitle" id="lbDisabMonth"></p>
-            <canvas id="cDisability"></canvas>
-        </div>
+        <div class="grid">
+            <div class="card">
+                <h3>Pacientes por mes (Total) e % Ativos</h3>
+                <canvas id="cPatientsMonth"></canvas>
+            </div>
 
-        <div class="card">
-            <h3>Top 10 especialidades (atendimentos) & média de nota</h3>
-            <canvas id="cProfSpec"></canvas>
-        </div>
+            <div class="card">
+                <h3>Faixa etaria (mes mais recente)</h3>
+                <p class="subtitle" id="lbAgeMonth"></p>
+                <canvas id="cPatientsAge"></canvas>
+            </div>
 
-        <div class="card">
-            <h3>Atendimentos por mês & taxa de conclusão</h3>
-            <canvas id="cProfSeries"></canvas>
+            <div class="card">
+                <h3>Tipos de deficiencia (top 10 - mes mais recente)</h3>
+                <p class="subtitle" id="lbDisabMonth"></p>
+                <canvas id="cDisability"></canvas>
+            </div>
+
+            <div class="card">
+                <h3>Top 10 especialidades e media de nota</h3>
+                <canvas id="cProfSpec"></canvas>
+            </div>
+
+            <div class="card">
+                <h3>Atendimentos por mes e taxa de conclusao</h3>
+                <canvas id="cProfSeries"></canvas>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script id="datasets-json" type="application/json">
   {{ datasets | tojson | safe }}
