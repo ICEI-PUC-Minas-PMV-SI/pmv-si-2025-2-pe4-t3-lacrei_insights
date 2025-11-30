@@ -1,0 +1,136 @@
+📦 Guia de Instalação e Replicação do Projeto
+
+Este documento orienta como instalar, configurar e executar o projeto em um novo ambiente, seja localmente ou em produção.
+
+✅ 1. Pré-requisitos
+
+Antes de iniciar, certifique-se de ter instalado:
+
+Python 3.10+
+
+Node.js 18+ e npm
+
+PostgreSQL 14+
+
+Git
+
+Docker e Docker Compose (recomendado)
+
+✅ 2. Clonar o Projeto
+
+git clone https://github.com/ICEI-PUC-Minas-PMV-SI/pmv-si-2025-2-pe4-t3-lacrei_insights.git
+cd pmv-si-2025-2-pe4-t3-lacrei_insights
+
+
+Selecione o branch desejado:
+
+git checkout lacrei
+
+✅ 3. Configuração do Banco de Dados (PostgreSQL)
+
+Criamos o banco e o usuário para testes, mas em produção, a Lacrei poderá conectar a solução diretamente
+com o banco já existente:
+
+CREATE DATABASE lacrei_db;
+CREATE USER lacrei_user WITH ENCRYPTED PASSWORD 'senha_forte';
+GRANT ALL PRIVILEGES ON DATABASE lacrei_db TO lacrei_user;
+
+
+Configure o arquivo .env do backend (CODIGO/.env):
+
+DB_NAME=lacrei_db
+DB_USER=lacrei_user
+DB_PASSWORD=senha_forte
+DB_HOST=localhost
+DB_PORT=5432
+SECRET_KEY=sua_secret_key
+DEBUG=False
+
+✅ 4. Backend (Django + Django REST Framework)
+
+Entre no diretório:
+
+cd CODIGO
+
+
+Crie ambiente virtual e instale dependências:
+
+python -m venv venv
+source venv/bin/activate      # Linux/macOS
+venv\Scripts\activate         # Windows
+
+pip install -r requirements.txt
+
+
+Execute migrações:
+
+python manage.py migrate
+
+
+Inicie o servidor:
+
+python manage.py runserver
+
+✅ 5. Frontend (Next.js + TypeScript)
+
+Entre no diretório do frontend:
+
+cd frontend
+
+
+Instale dependências:
+
+npm install
+
+
+Crie o arquivo .env.local:
+
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+
+Execute:
+
+npm run build
+npm run start
+
+✅ 6. ETL e Integração de Dados
+
+O pipeline de ETL é responsável pela extração, transformação e carga dos dados no Data Warehouse.
+
+Para execuções locais, utilize os scripts Python presentes na pasta ETL.
+
+Para uso em produção:
+
+Pipelines podem ser disparados manualmente via interface do sistema.
+
+O fluxo completo atualiza as camadas staging, model e data marts consumidas pelo Metabase.
+
+✅ 7. Metabase (BI)
+
+Se desejar replicar o ambiente analítico:
+
+Execute o Metabase via Docker:
+
+docker run -p 3001:3000 metabase/metabase
+
+
+Conecte ao banco PostgreSQL contendo o Data Warehouse.
+
+Importe ou recrie os dashboards.
+
+✅ 8. Deploy (Docker — recomendado)
+
+O projeto pode ser executado facilmente via Docker Compose, caso esteja disponibilizado:
+
+docker-compose up --build -d
+
+
+Isso instancia:
+
+Backend (Django)
+
+Frontend (Next.js)
+
+Banco PostgreSQL
+
+Metabase (opcional)
