@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,10 +17,14 @@
             --muted: #54626a;
             --border: #d6e6df;
             --card: #ffffff;
-            --shadow: 0 12px 28px rgba(0,0,0,0.08);
+            --shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Poppins', system-ui, -apple-system, sans-serif;
@@ -84,7 +89,7 @@
             background: var(--green);
             color: #fff;
             border: none;
-            box-shadow: 0 10px 20px rgba(0,128,103,0.15);
+            box-shadow: 0 10px 20px rgba(0, 128, 103, 0.15);
         }
 
         .hero {
@@ -103,7 +108,10 @@
             margin-bottom: 8px;
         }
 
-        .hero p { color: var(--muted); line-height: 1.6; }
+        .hero p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
 
         .actions {
             display: grid;
@@ -126,7 +134,11 @@
             margin-bottom: 6px;
         }
 
-        .card p { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+        .card p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
 
         .btn {
             display: inline-flex;
@@ -140,13 +152,23 @@
             cursor: pointer;
             background: var(--green);
             color: #fff;
-            box-shadow: 0 10px 24px rgba(0,128,103,0.18);
+            box-shadow: 0 10px 24px rgba(0, 128, 103, 0.18);
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             width: 100%;
         }
 
-        .btn:hover { transform: translateY(-1px); background: var(--green-dark); box-shadow: 0 14px 30px rgba(0,105,85,0.2); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn:hover {
+            transform: translateY(-1px);
+            background: var(--green-dark);
+            box-shadow: 0 14px 30px rgba(0, 105, 85, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
         .message {
             display: none;
@@ -156,11 +178,33 @@
             font-weight: 600;
             margin-bottom: 16px;
         }
-        .message.success { display: block; background: #e7f7f1; border-color: #aad6c9; color: #0f8d6c; }
-        .message.error { display: block; background: #ffecee; border-color: #ffb1b7; color: #b9253a; }
-        .message.info { display: block; background: #e9f3ff; border-color: #b8d9ff; color: #1e62b5; }
 
-        #metabaseContainer { margin-top: 18px; display: none; }
+        .message.success {
+            display: block;
+            background: #e7f7f1;
+            border-color: #aad6c9;
+            color: #0f8d6c;
+        }
+
+        .message.error {
+            display: block;
+            background: #ffecee;
+            border-color: #ffb1b7;
+            color: #b9253a;
+        }
+
+        .message.info {
+            display: block;
+            background: #e9f3ff;
+            border-color: #b8d9ff;
+            color: #1e62b5;
+        }
+
+        #metabaseContainer {
+            margin-top: 18px;
+            display: none;
+        }
+
         #metabaseIframe {
             width: 100%;
             height: 1100px;
@@ -173,14 +217,19 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.4);
+            border: 3px solid rgba(255, 255, 255, 0.4);
             border-top-color: #fff;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="page">
         <header>
@@ -226,61 +275,77 @@
         </div>
     </div>
 
-<script>
-    let iframeLoaded = false;
+    <script>
+        let iframeLoaded = false;
+        // We'll request the signed embed URL on demand from the backend endpoint `/metabase/embed`.
+        // Avoid referencing non-existent DOM inputs here to prevent initialization errors.
+        const METABASE_EMBED_URL = null;
+        const METABASE_ERROR = null;
 
-    function showMessage(text, type) {
-        const msg = document.getElementById('message');
-        msg.textContent = text;
-        msg.className = `message ${type}`;
-        setTimeout(() => msg.className = 'message', 5000);
-    }
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            setTimeout(() => msg.className = 'message', 5000);
+        }
 
-    function setButtonLoading(id, loading) {
-        const btn = document.getElementById(id);
-        const icon = btn.querySelector('.btn-icon');
-        btn.disabled = loading;
-        icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? 'ETL' : 'BI');
-    }
+        function setButtonLoading(id, loading) {
+            const btn = document.getElementById(id);
+            const icon = btn.querySelector('.btn-icon');
+            btn.disabled = loading;
+            icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? 'ETL' : 'BI');
+        }
 
-    async function atualizarBancoDados() {
-        setButtonLoading('btnAtualizar', true);
-        showMessage('Atualizando banco de dados...', 'info');
+        async function atualizarBancoDados() {
+            setButtonLoading('btnAtualizar', true);
+            showMessage('Atualizando banco de dados...', 'info');
 
-        try {
-            const resp = await fetch('/upload/staging');
-            const data = await resp.json();
+            try {
+                const resp = await fetch('/upload/staging');
+                const data = await resp.json();
 
-            if (!resp.ok || data.sucesso === false) {
-                showMessage(data.mensagem || 'Erro ao atualizar.', 'error');
-                return;
+                if (!resp.ok || data.sucesso === false) {
+                    showMessage(data.mensagem || 'Erro ao atualizar.', 'error');
+                    return;
+                }
+
+                showMessage('ETL concluido com sucesso!', 'success');
+
+            } catch (e) {
+                showMessage('Erro: ' + e.message, 'error');
+            } finally {
+                setButtonLoading('btnAtualizar', false);
             }
-
-            showMessage('ETL concluido com sucesso!', 'success');
-
-        } catch (e) {
-            showMessage('Erro: ' + e.message, 'error');
-        } finally {
-            setButtonLoading('btnAtualizar', false);
         }
-    }
 
-    async function mostrarGrafico() {
-        setButtonLoading('btnGrafico', true);
-        showMessage('Carregando graficos do Metabase...', 'info');
+        async function mostrarGrafico() {
+            setButtonLoading('btnGrafico', true);
+            showMessage('Carregando graficos do Metabase...', 'info');
 
-        try {
-            await fetch('/upload/bi', { method: 'POST' });
-            const iframe = document.getElementById('metabaseIframe');
-            iframe.src = 'http://localhost:3000/public/dashboard/edefb48d-1a91-423a-a048-803b6688c976';
-            document.getElementById('metabaseContainer').style.display = 'block';
-            showMessage('Grafico carregado com sucesso!', 'success');
-        } catch (e) {
-            showMessage('Erro ao carregar o dashboard: ' + e.message, 'error');
-        } finally {
-            setButtonLoading('btnGrafico', false);
+            try {
+                // Trigger any server-side BI upload/prepare step (keeps existing behavior)
+                await fetch('/upload/bi', { method: 'POST' });
+
+                // Request a short-lived signed embed URL from our backend
+                const resp = await fetch('/metabase/embed');
+                const payload = await resp.json();
+                if (!resp.ok || payload.embed_url == null) {
+                    throw new Error(payload.error || 'Embed URL not available');
+                }
+
+                const embedUrl = payload.embed_url;
+                const iframe = document.getElementById('metabaseIframe');
+
+                iframe.src = embedUrl;
+                document.getElementById('metabaseContainer').style.display = 'block';
+                showMessage('Grafico carregado com sucesso!', 'success');
+            } catch (e) {
+                showMessage('Erro ao carregar o dashboard: ' + e.message, 'error');
+            } finally {
+                setButtonLoading('btnGrafico', false);
+            }
         }
-    }
-</script>
+    </script>
 </body>
+
 </html>
