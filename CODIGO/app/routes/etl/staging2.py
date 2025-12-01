@@ -507,9 +507,6 @@ def _rodar_etl_profile_disability_types(conn):
             disabilitytype_id INTEGER
         )
         TABLESPACE pg_default;
-
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreiid_profile_disability_types
-            OWNER TO postgres;
     """))
 
     # 2) Upsert com limpeza e tipagem
@@ -739,8 +736,7 @@ def _rodar_etl_user(conn):
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreiid_user
-            OWNER TO postgres;
+        
     """))
 
     # (Opcional) Índices úteis para consultas
@@ -987,8 +983,7 @@ def _rodar_etl_clinic(conn):
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreisaude_clinic
-            OWNER TO postgres;
+        
     """))
 
     # Índices úteis para consultas
@@ -1234,8 +1229,7 @@ def _rodar_etl_professional(conn):
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreisaude_professional
-            OWNER TO postgres;
+        
     """))
 
     # Índices úteis
@@ -1429,8 +1423,7 @@ def _rodar_etl_professional_disability_types(conn):
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreisaude_professional_disability_types
-            OWNER TO postgres;
+        
     """))
 
     # Índices úteis (consultas por professional_id / disabilitytype_id)
