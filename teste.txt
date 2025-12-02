@@ -1,1 +1,11 @@
-teste
+DATABASE_URL= aqui iria a url de conexao ao banco dw da aws eu acho, estava usando local
+
+# (Opcional) Banco de dados de origem, se quiser copiar dados automaticamente do relacional original
+SOURCE_DATABASE_URL=postgresql://lacreiinsights:puc2025*@lacreisaude-relacional.postgres.database.azure.com:5432/postgres
+
+# (Opcional) Schema de origem, se não for o padrão
+SOURCE_SCHEMA=lacreisaude-relacional
+
+METABASE_SITE_URL=http://localhost:3000 
+METABASE_SECRET_KEY="d4022788e7dee72733acb1004f1a0add380b4829cb6530190ecdae43e6c38f10"
+METABASE_DASHBOARD_ID=2
