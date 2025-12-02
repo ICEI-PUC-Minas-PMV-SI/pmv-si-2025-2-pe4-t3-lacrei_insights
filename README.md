@@ -8,7 +8,7 @@
 
 ---
 
-##🚀 Acesso à Solução (Aplicação Final)
+## 🚀 Acesso à Solução (Aplicação Final)
 
 A plataforma Lacrei Insights está disponível para uso no link abaixo:
 
