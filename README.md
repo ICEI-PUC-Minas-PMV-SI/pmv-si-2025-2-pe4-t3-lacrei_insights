@@ -8,6 +8,15 @@
 
 ---
 
+##🚀 Acesso à Solução (Aplicação Final)
+
+A plataforma Lacrei Insights está disponível para uso no link abaixo:
+
+🔗 Acesse a Aplicação:
+👉 http://44.197.116.219/login
+
+---
+
 ## 💡 Sobre o projeto
 
 O **Lacrei Insights** é um sistema de Business Intelligence desenvolvido para apoiar a **gestão de impacto da Lacrei Saúde**, trazendo métricas essenciais sobre atendimentos, pacientes e profissionais da saúde LGBTQIAPN+.
