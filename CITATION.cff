@@ -7,16 +7,16 @@ type: software
 authors:
   - given-names: Sarah
     family-names: Cesar Martins dos Santos
-  - given-names: Nico
-    family-names: 
+  - given-names: Nico 
+    family-names: Rocha da Costa 
   - given-names: Luini
-    family-names: 
+    family-names: Freitas Salles 
   - given-names: João 
     family-names: 
   - given-names: Lucas
     family-names: 
-  - given-names: Ryann
-    family-names: 
+  - given-names: Ryann Victor 
+    family-names: de Almeida Parreira 
 repository-code: >-
   https://github.com/orgs/ICEI-PUC-Minas-PMV-SI/teams/lacrei_insights
 keywords:
