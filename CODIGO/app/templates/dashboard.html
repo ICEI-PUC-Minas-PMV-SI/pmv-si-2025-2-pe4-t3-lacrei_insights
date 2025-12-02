@@ -269,16 +269,14 @@
                 <h3>Ver Indicadores</h3>
                 <p>Abre um Dashboard através de uma ferramenta de BI com os indicadores de experiência e atendimento,
                     para acompanhar volumes, desempenho e qualidade dos atendimentos.</p>
-                <button class="btn" id="btnGrafico" onclick="mostrarGrafico()">
-                    <span class="btn-icon">Dashboards -</span>
-                    <span>Ver Indicadores</span>
-                </button>
+                <a href="http://44.197.116.219/metabase/public/dashboard/3b3c0948-1ddf-4624-b105-fa15133df56c">
+                    <button class="btn" id="btnGrafico">
+                        <span class="btn-icon">Dashboards -</span>
+                        <span>Ver Indicadores</span>
+                    </button>
+                </a>
             </div>
         </section>
-
-        <div id="metabaseContainer">
-            <iframe id="metabaseIframe" src="" allowtransparency="true"></iframe>
-        </div>
     </div>
 
     <script>
@@ -370,17 +368,6 @@
             } finally {
                 setButtonLoading('btnAtualizar', false);
             }
-        }
-
-        function mostrarGrafico() {
-            const container = document.getElementById('metabaseContainer');
-            const iframe = document.getElementById('metabaseIframe');
-
-            iframe.src = "http://localhost:3000/public/dashboard/3b3c0948-1ddf-4624-b105-fa15133df56c";
-
-            container.style.display = 'block';
-
-            showMessage("Dashboard carregado com sucesso!", "success");
         }
     </script>
 </body>
