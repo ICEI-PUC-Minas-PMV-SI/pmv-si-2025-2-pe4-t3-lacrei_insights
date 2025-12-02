@@ -1931,13 +1931,13 @@ def consultar_indicadores_resumo():
 
             # DEBUG: Adiciona retorno detalhado dos runs para diagnóstico
             # Se algum ETL falhar, retorna imediatamente com o erro detalhado
-            # for r in runs:
-            #     if not r["ok"]:
-            #         return jsonify({
-            #             "sucesso": False,
-            #             "mensagem": f"Erro no ETL '{r['name']}': {r.get('msg')}",
-            #             "etls": runs
-            #         }), 500
+            for r in runs:
+                if not r["ok"]:
+                    return jsonify({
+                        "sucesso": False,
+                        "mensagem": f"Erro no ETL '{r['name']}': {r.get('msg')}",
+                        "etls": runs
+                    }), 500
 
             # 2) Amostras (ainda DENTRO do with)
             amostras = {}
@@ -2007,19 +2007,34 @@ def consultar_indicadores_resumo():
             """)).mappings().all()]
 
             # 3) Resumo ainda DENTRO do with
+            # Normaliza resultados para evitar NoneType quando algum ETL retornar inesperadamente None
+            normalized_runs = []
+            for r in runs:
+                if isinstance(r, dict):
+                    normalized_runs.append(r)
+                else:
+                    normalized_runs.append({
+                        "name": getattr(r, "name", "unknown") if hasattr(r, "name") else "unknown",
+                        "ok": False,
+                        "msg": "ETL returned no result (None)",
+                        "source_rows": 0,
+                        "inserted": 0,
+                        "updated": 0
+                    })
+
             resumo = [{
-                "tabela": r["name"],
-                "ok": r["ok"],
+                "tabela": r.get("name"),
+                "ok": r.get("ok"),
                 "mensagem": r.get("msg"),
                 "linhas_elegiveis": r.get("source_rows", 0),
                 "inseridos": r.get("inserted", 0),
                 "atualizados": r.get("updated", 0)
-            } for r in runs]
+            } for r in normalized_runs]
 
-            model_res = _rodar_etl_model(conn)
-            mart_res = _rodar_etl_mart(conn)
+            model_res = _rodar_etl_model(conn) or {"ok": False, "msg": "MODEL ETL returned no result"}
+            mart_res = _rodar_etl_mart(conn) or {"ok": False, "msg": "MART ETL returned no result"}
 
-            sucesso = all(r["ok"] for r in runs) and model_res.get("ok", False) and mart_res.get("ok", False)
+            sucesso = all(r.get("ok", False) for r in normalized_runs) and model_res.get("ok", False) and mart_res.get("ok", False)
             resposta = {
                 "sucesso": sucesso,
                 "resumo": (
@@ -2028,7 +2043,7 @@ def consultar_indicadores_resumo():
                     + [{"tabela": "MART",  "ok": mart_res.get("ok",  False), "mensagem": mart_res.get("msg")}]
                 ),
                 "amostras": amostras,
-                # "etls": runs # DEBUG: Retorna detalhes dos ETLs para diagnóstico
+                "etls": runs # DEBUG: Retorna detalhes dos ETLs para diagnóstico
             }
         return jsonify(resposta), 200
     except Exception as e:

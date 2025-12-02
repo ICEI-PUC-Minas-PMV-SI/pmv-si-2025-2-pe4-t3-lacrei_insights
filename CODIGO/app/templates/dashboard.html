@@ -238,34 +238,40 @@
                 <span>Lacrei Saúde</span>
             </div>
             <div class="nav-actions">
-                <a class="pill" href="/apidocs">Swagger</a>
+                <a class="pill"
+                    href="https://github.com/ICEI-PUC-Minas-PMV-SI/pmv-si-2025-2-pe4-t3-lacrei_insights.git">Github</a>
                 <a class="pill logout" href="/logout">Sair</a>
             </div>
         </header>
 
         <section class="hero">
             <h1>Painel Lacrei Saúde</h1>
-            <p>Execute as rotinas de ETL e acompanhe os dashboards da Lacrei Saúde.</p>
+            <p>Use este painel para atualizar os dados da Lacrei Saúde e acessar os dashboards com os indicadores de
+                experiência e atendimento.<br>
+                Esse processo reúne, confere e organiza os dados mais recentes e, automaticamente, atualiza os
+                dashboards, garantindo informações confiáveis para análise.</p>
         </section>
 
         <div id="message" class="message"></div>
 
         <section class="actions">
             <div class="card">
-                <h3>Atualizar Banco de Dados</h3>
-                <p>Roda o ETL da staging 01 para staging 02 e atualiza os dados do mart.</p>
+                <h3>Atualizar Base de Dados</h3>
+                <p>Executa o ETL: extrai os dados brutos, valida e padroniza as informações e carrega as tabelas usadas
+                    pelos gráficos, garantindo visualizar indicadores com dados atualizados.</p>
                 <button class="btn" id="btnAtualizar" onclick="atualizarBancoDados()">
-                    <span class="btn-icon">ETL</span>
-                    <span>Rodar ETL</span>
+                    <span class="btn-icon">ETL -</span>
+                    <span>Atualizar dados</span>
                 </button>
             </div>
 
             <div class="card">
-                <h3>Ver Dashboard</h3>
-                <p>Carrega o Metabase com os KPIs de experiência e atendimento.</p>
+                <h3>Ver Indicadores</h3>
+                <p>Abre um Dashboard através de uma ferramenta de BI com os indicadores de experiência e atendimento,
+                    para acompanhar volumes, desempenho e qualidade dos atendimentos.</p>
                 <button class="btn" id="btnGrafico" onclick="mostrarGrafico()">
-                    <span class="btn-icon">BI</span>
-                    <span>Abrir Metabase</span>
+                    <span class="btn-icon">Dashboards -</span>
+                    <span>Ver Indicadores</span>
                 </button>
             </div>
         </section>
@@ -276,74 +282,105 @@
     </div>
 
     <script>
-        let iframeLoaded = false;
-        // We'll request the signed embed URL on demand from the backend endpoint `/metabase/embed`.
-        // Avoid referencing non-existent DOM inputs here to prevent initialization errors.
-        const METABASE_EMBED_URL = null;
-        const METABASE_ERROR = null;
+        // mantém referência ao último tipo (se precisar)
+        let lastMessageType = null;
 
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = `message ${type}`;
-            setTimeout(() => msg.className = 'message', 5000);
+        function showMessage(text, type = 'info') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`; // success/error/info -> fica visível
+            lastMessageType = type;
         }
 
-        function setButtonLoading(id, loading) {
-            const btn = document.getElementById(id);
-            const icon = btn.querySelector('.btn-icon');
-            btn.disabled = loading;
-            icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? 'ETL' : 'BI');
+        function clearMessage() {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '';
+            messageEl.className = 'message'; // volta a ficar oculto
+            lastMessageType = null;
         }
+
+        function setButtonLoading(buttonId, loading) {
+            const btn = document.getElementById(buttonId);
+            if (loading) {
+                btn.disabled = true;
+                const icon = btn.querySelector('.btn-icon');
+                icon.innerHTML = '<span class="loading"></span>';
+            } else {
+                btn.disabled = false;
+                const icon = btn.querySelector('.btn-icon');
+                if (buttonId === 'btnAtualizar') {
+                    icon.textContent = '🔄';
+                } else {
+                    icon.textContent = '📈';
+                }
+            }
+        }
+
 
         async function atualizarBancoDados() {
             setButtonLoading('btnAtualizar', true);
             showMessage('Atualizando banco de dados...', 'info');
 
             try {
-                const resp = await fetch('/upload/staging');
+                const resp = await fetch('/upload/staging', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
                 const data = await resp.json();
 
-                if (!resp.ok || data.sucesso === false) {
-                    showMessage(data.mensagem || 'Erro ao atualizar.', 'error');
+                // Se a rota retornou exception formatada
+                if (!resp.ok || data.sucesso === false && !data.resumo) {
+                    const msg = data?.mensagem || 'Erro ao atualizar banco de dados';
+                    showMessage(msg, 'error');
                     return;
                 }
 
-                showMessage('ETL concluido com sucesso!', 'success');
+                // Temos resumo por etapa/tabela
+                const falhas = (data.resumo || []).filter(r => r.ok === false);
+                const okTudo = data.sucesso === true && falhas.length === 0;
 
+                if (okTudo) {
+                    const totalIns = (data.resumo || [])
+                        .map(r => r.inseridos || 0)
+                        .reduce((a, b) => a + b, 0);
+                    const totalUpd = (data.resumo || [])
+                        .map(r => r.atualizados || 0)
+                        .reduce((a, b) => a + b, 0);
+
+                    showMessage(
+                        `ETL concluído com sucesso. Inseridos: ${totalIns}, Atualizados: ${totalUpd}.`,
+                        'success'
+                    );
+                } else {
+                    // monta um sumário curto dos erros
+                    const detalhes = falhas
+                        .slice(0, 4) // evita mensagem gigante
+                        .map(f => `• ${f.tabela}: ${f.mensagem || 'falha'}`)
+                        .join(' | ');
+
+                    showMessage(
+                        `ETL executado com falhas. Verifique: ${detalhes}` +
+                        (falhas.length > 4 ? ` | (+${falhas.length - 4} itens)` : ''),
+                        'error'
+                    );
+                }
             } catch (e) {
-                showMessage('Erro: ' + e.message, 'error');
+                showMessage('Erro ao conectar com o servidor: ' + e.message, 'error');
             } finally {
                 setButtonLoading('btnAtualizar', false);
             }
         }
 
-        async function mostrarGrafico() {
-            setButtonLoading('btnGrafico', true);
-            showMessage('Carregando graficos do Metabase...', 'info');
+        function mostrarGrafico() {
+            const container = document.getElementById('metabaseContainer');
+            const iframe = document.getElementById('metabaseIframe');
 
-            try {
-                // Trigger any server-side BI upload/prepare step (keeps existing behavior)
-                await fetch('/upload/bi', { method: 'POST' });
+            iframe.src = "http://localhost:3000/public/dashboard/3b3c0948-1ddf-4624-b105-fa15133df56c";
 
-                // Request a short-lived signed embed URL from our backend
-                const resp = await fetch('/metabase/embed');
-                const payload = await resp.json();
-                if (!resp.ok || payload.embed_url == null) {
-                    throw new Error(payload.error || 'Embed URL not available');
-                }
+            container.style.display = 'block';
 
-                const embedUrl = payload.embed_url;
-                const iframe = document.getElementById('metabaseIframe');
-
-                iframe.src = embedUrl;
-                document.getElementById('metabaseContainer').style.display = 'block';
-                showMessage('Grafico carregado com sucesso!', 'success');
-            } catch (e) {
-                showMessage('Erro ao carregar o dashboard: ' + e.message, 'error');
-            } finally {
-                setButtonLoading('btnGrafico', false);
-            }
+            showMessage("Dashboard carregado com sucesso!", "success");
         }
     </script>
 </body>

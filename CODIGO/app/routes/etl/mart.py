@@ -259,9 +259,13 @@ def _rodar_etl_mart(conn):
             specialty VARCHAR(255),
             total_appointments INT,
             completed_appointments INT,
-            cancelled_appointments INT,
+            completed_appointments_online INT,
+            completed_appointments_presencial INT,
+            cancelled_appointments_online INT,
+            cancelled_appointments_presencial INT,
             completion_rate NUMERIC(5,2),
-            cancellation_rate NUMERIC(5,2),
+            cancellation_rate_online NUMERIC(5,2),
+            cancellation_rate_presencial NUMERIC(5,2),
             avg_waiting_time NUMERIC(10,2),
             created_at DATE,
             CONSTRAINT mart_professional_appointments_pk
@@ -277,6 +281,7 @@ def _rodar_etl_mart(conn):
                 d_cr.calendar_date                                           AS created_at,
                 COALESCE(dp.specialty, 'Não informada')                      AS specialty,
                 LOWER(COALESCE(f.status, ''))                                AS status,
+                COALESCE(f.type, '')                                         AS type,
                 f.waiting_time
             FROM lacreisaude_model.fact_lacreisaude_appointments f
             JOIN lacreisaude_model.dim_lacreisaude_date d_ap
@@ -294,7 +299,10 @@ def _rodar_etl_mart(conn):
                 specialty,
                 COUNT(*)                                           AS total_appointments,
                 SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)  AS completed_appointments,
-                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END)  AS cancelled_appointments,
+                SUM(CASE WHEN status = 'completed' AND type = 'Online' THEN 1 ELSE 0 END)  AS completed_appointments_online,
+                SUM(CASE WHEN status = 'completed' AND type = 'Presencial' THEN 1 ELSE 0 END)  AS completed_appointments_presencial,
+                SUM(CASE WHEN status = 'cancelled' AND type = 'Online' THEN 1 ELSE 0 END)  AS cancelled_appointments_online,
+                SUM(CASE WHEN status = 'cancelled' AND type = 'Presencial' THEN 1 ELSE 0 END)  AS cancelled_appointments_presencial,
                 ROUND(AVG(NULLIF(waiting_time, 0))::numeric, 2)    AS avg_waiting_time,
                 MAX(created_at)                                    AS created_at
             FROM base
@@ -303,8 +311,8 @@ def _rodar_etl_mart(conn):
         INSERT INTO {MART_SCHEMA}.professional_appointments
         (
             professional_sk, appointment_period, specialty,
-            total_appointments, completed_appointments, cancelled_appointments,
-            completion_rate, cancellation_rate, avg_waiting_time, created_at
+            total_appointments, completed_appointments,  completed_appointments_online, completed_appointments_presencial, cancelled_appointments_online, cancelled_appointments_presencial,
+            completion_rate, cancellation_rate_online, cancellation_rate_presencial, avg_waiting_time, created_at
         )
         SELECT
             professional_sk,
@@ -312,68 +320,33 @@ def _rodar_etl_mart(conn):
             specialty,
             total_appointments,
             completed_appointments,
-            cancelled_appointments,
+            completed_appointments_online,
+            completed_appointments_presencial,
+            cancelled_appointments_online,
+            cancelled_appointments_presencial,
             ROUND((completed_appointments::numeric / NULLIF(total_appointments,0)) * 100, 2) AS completion_rate,
-            ROUND((cancelled_appointments::numeric / NULLIF(total_appointments,0)) * 100, 2) AS cancellation_rate,
+            ROUND((cancelled_appointments_online::numeric / NULLIF(total_appointments,0)) * 100, 2) AS cancellation_rate_online,
+            ROUND((cancelled_appointments_presencial::numeric / NULLIF(total_appointments,0)) * 100, 2) AS cancellation_rate_presencial,
             avg_waiting_time,
             created_at
         FROM agg
         ON CONFLICT (professional_sk, appointment_period, specialty) DO UPDATE SET
             total_appointments      = EXCLUDED.total_appointments,
             completed_appointments  = EXCLUDED.completed_appointments,
-            cancelled_appointments  = EXCLUDED.cancelled_appointments,
+            completed_appointments_online = EXCLUDED.completed_appointments_online,
+            completed_appointments_presencial = EXCLUDED.completed_appointments_presencial,
+            cancelled_appointments_online = EXCLUDED.cancelled_appointments_online,
+            cancelled_appointments_presencial = EXCLUDED.cancelled_appointments_presencial,
+            cancellation_rate_online = EXCLUDED.cancellation_rate_online,
+            cancellation_rate_presencial = EXCLUDED.cancellation_rate_presencial,
             completion_rate         = EXCLUDED.completion_rate,
-            cancellation_rate       = EXCLUDED.cancellation_rate,
             avg_waiting_time        = EXCLUDED.avg_waiting_time,
             created_at              = EXCLUDED.created_at;
     """))
 
+    # Retorna um resumo indicando que o ETL da MART foi executado com sucesso
+    return {
+        "ok": True,
+        "msg": "MART ETL concluído com sucesso."
+    }
 
-     # ---------------------------------------------------------------------
-    # 5) MART: professional_disability
-    #     PK: (period_month, disability_type)
-
-    conn.execute(text(f"""
-        CREATE TABLE IF NOT EXISTS {MART_SCHEMA}.professional_disability (
-            period_month DATE NOT NULL,
-            disability_type VARCHAR(255) NOT NULL,
-            total_professionals INT,
-            active_professionals INT,
-            inactive_professionals INT,
-            CONSTRAINT mart_professional_disability_pk
-                PRIMARY KEY (period_month, disability_type)
-        );
-    """))
-
-    conn.execute(text(f"""
-        WITH expanded AS (
-            SELECT
-                DATE_TRUNC('month', p.created_at)::date           AS period_month,
-                TRIM(UNNEST(COALESCE(p.disability_type, ARRAY[]::text[]))) AS disability_type,
-                COALESCE(p.active, false)                      AS is_active
-            FROM lacreisaude_model.dim_lacreisaude_professional p
-            WHERE p.disability_type IS NOT NULL
-        ),
-        aggregated AS (
-            SELECT
-                period_month,
-                disability_type,
-                COUNT(*)                                           AS total_professionals,
-                SUM(CASE WHEN is_active THEN 1 ELSE 0 END)         AS active_professionals,
-                SUM(CASE WHEN NOT is_active THEN 1 ELSE 0 END)     AS inactive_professionals
-            FROM expanded
-            GROUP BY 1,2
-        )
-        INSERT INTO {MART_SCHEMA}.professional_disability
-        (
-            period_month, disability_type, total_professionals, active_professionals, inactive_professionals
-        )
-        SELECT period_month, disability_type, total_professionals, active_professionals, inactive_professionals
-        FROM aggregated
-        ON CONFLICT (period_month, disability_type) DO UPDATE SET
-            total_professionals      = EXCLUDED.total_professionals,
-            active_professionals     = EXCLUDED.active_professionals,
-            inactive_professionals   = EXCLUDED.inactive_professionals;
-    """))       
-
-    return {"ok": True, "msg": f"Data Mart atualizada no schema {MART_SCHEMA}."}
