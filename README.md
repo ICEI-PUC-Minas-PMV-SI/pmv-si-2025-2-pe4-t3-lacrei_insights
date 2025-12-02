@@ -41,4 +41,4 @@ BI para Gestão do Impacto da empresa na saúde de pessoas LGBTQIAPN+
 
 # Guia de Migração da Aplicação
 
-<li><a href="guia_de_imigracao.pdf/"> Acesse o guia</a></li>
+<li><a href="guia_de_imigracao.pdf"> Acesse o guia</a></li>
