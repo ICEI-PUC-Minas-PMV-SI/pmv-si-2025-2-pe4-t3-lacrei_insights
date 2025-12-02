@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,10 +17,14 @@
             --muted: #54626a;
             --border: #d6e6df;
             --card: #ffffff;
-            --shadow: 0 12px 28px rgba(0,0,0,0.08);
+            --shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Poppins', system-ui, -apple-system, sans-serif;
@@ -84,7 +89,7 @@
             background: var(--green);
             color: #fff;
             border: none;
-            box-shadow: 0 10px 20px rgba(0,128,103,0.15);
+            box-shadow: 0 10px 20px rgba(0, 128, 103, 0.15);
         }
 
         .hero {
@@ -103,7 +108,10 @@
             margin-bottom: 8px;
         }
 
-        .hero p { color: var(--muted); line-height: 1.6; }
+        .hero p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
 
         .actions {
             display: grid;
@@ -126,7 +134,11 @@
             margin-bottom: 6px;
         }
 
-        .card p { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+        .card p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
 
         .btn {
             display: inline-flex;
@@ -140,13 +152,23 @@
             cursor: pointer;
             background: var(--green);
             color: #fff;
-            box-shadow: 0 10px 24px rgba(0,128,103,0.18);
+            box-shadow: 0 10px 24px rgba(0, 128, 103, 0.18);
             transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
             width: 100%;
         }
 
-        .btn:hover { transform: translateY(-1px); background: var(--green-dark); box-shadow: 0 14px 30px rgba(0,105,85,0.2); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn:hover {
+            transform: translateY(-1px);
+            background: var(--green-dark);
+            box-shadow: 0 14px 30px rgba(0, 105, 85, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
         .message {
             display: none;
@@ -156,11 +178,33 @@
             font-weight: 600;
             margin-bottom: 16px;
         }
-        .message.success { display: block; background: #e7f7f1; border-color: #aad6c9; color: #0f8d6c; }
-        .message.error { display: block; background: #ffecee; border-color: #ffb1b7; color: #b9253a; }
-        .message.info { display: block; background: #e9f3ff; border-color: #b8d9ff; color: #1e62b5; }
 
-        #metabaseContainer { margin-top: 18px; display: none; }
+        .message.success {
+            display: block;
+            background: #e7f7f1;
+            border-color: #aad6c9;
+            color: #0f8d6c;
+        }
+
+        .message.error {
+            display: block;
+            background: #ffecee;
+            border-color: #ffb1b7;
+            color: #b9253a;
+        }
+
+        .message.info {
+            display: block;
+            background: #e9f3ff;
+            border-color: #b8d9ff;
+            color: #1e62b5;
+        }
+
+        #metabaseContainer {
+            margin-top: 18px;
+            display: none;
+        }
+
         #metabaseIframe {
             width: 100%;
             height: 1100px;
@@ -173,14 +217,19 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.4);
+            border: 3px solid rgba(255, 255, 255, 0.4);
             border-top-color: #fff;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="page">
         <header>
@@ -189,98 +238,138 @@
                 <span>Lacrei Saúde</span>
             </div>
             <div class="nav-actions">
-                <a class="pill" href="/apidocs">Swagger</a>
+                <a class="pill"
+                    href="https://github.com/ICEI-PUC-Minas-PMV-SI/pmv-si-2025-2-pe4-t3-lacrei_insights.git">Github</a>
                 <a class="pill logout" href="/logout">Sair</a>
             </div>
         </header>
 
         <section class="hero">
             <h1>Painel Lacrei Saúde</h1>
-            <p>Execute as rotinas de ETL e acompanhe os dashboards da Lacrei Saúde.</p>
+            <p>Use este painel para atualizar os dados da Lacrei Saúde e acessar os dashboards com os indicadores de
+                experiência e atendimento.<br>
+                Esse processo reúne, confere e organiza os dados mais recentes e, automaticamente, atualiza os
+                dashboards, garantindo informações confiáveis para análise.</p>
         </section>
 
         <div id="message" class="message"></div>
 
         <section class="actions">
             <div class="card">
-                <h3>Atualizar Banco de Dados</h3>
-                <p>Roda o ETL da staging 01 para staging 02 e atualiza os dados do mart.</p>
+                <h3>Atualizar Base de Dados</h3>
+                <p>Executa o ETL: extrai os dados brutos, valida e padroniza as informações e carrega as tabelas usadas
+                    pelos gráficos, garantindo visualizar indicadores com dados atualizados.</p>
                 <button class="btn" id="btnAtualizar" onclick="atualizarBancoDados()">
-                    <span class="btn-icon">ETL</span>
-                    <span>Rodar ETL</span>
+                    <span class="btn-icon">ETL -</span>
+                    <span>Atualizar dados</span>
                 </button>
             </div>
 
             <div class="card">
-                <h3>Ver Dashboard</h3>
-                <p>Carrega o Metabase com os KPIs de experiência e atendimento.</p>
-                <button class="btn" id="btnGrafico" onclick="mostrarGrafico()">
-                    <span class="btn-icon">BI</span>
-                    <span>Abrir Metabase</span>
-                </button>
+                <h3>Ver Indicadores</h3>
+                <p>Abre um Dashboard através de uma ferramenta de BI com os indicadores de experiência e atendimento,
+                    para acompanhar volumes, desempenho e qualidade dos atendimentos.</p>
+                <a href="http://44.197.116.219/metabase/public/dashboard/3b3c0948-1ddf-4624-b105-fa15133df56c">
+                    <button class="btn" id="btnGrafico">
+                        <span class="btn-icon">Dashboards -</span>
+                        <span>Ver Indicadores</span>
+                    </button>
+                </a>
             </div>
         </section>
-
-        <div id="metabaseContainer">
-            <iframe id="metabaseIframe" src="" allowtransparency="true"></iframe>
-        </div>
     </div>
 
-<script>
-    let iframeLoaded = false;
+    <script>
+        // mantém referência ao último tipo (se precisar)
+        let lastMessageType = null;
 
-    function showMessage(text, type) {
-        const msg = document.getElementById('message');
-        msg.textContent = text;
-        msg.className = `message ${type}`;
-        setTimeout(() => msg.className = 'message', 5000);
-    }
+        function showMessage(text, type = 'info') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`; // success/error/info -> fica visível
+            lastMessageType = type;
+        }
 
-    function setButtonLoading(id, loading) {
-        const btn = document.getElementById(id);
-        const icon = btn.querySelector('.btn-icon');
-        btn.disabled = loading;
-        icon.innerHTML = loading ? '<span class="loading"></span>' : (id === 'btnAtualizar' ? 'ETL' : 'BI');
-    }
+        function clearMessage() {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '';
+            messageEl.className = 'message'; // volta a ficar oculto
+            lastMessageType = null;
+        }
 
-    async function atualizarBancoDados() {
-        setButtonLoading('btnAtualizar', true);
-        showMessage('Atualizando banco de dados...', 'info');
-
-        try {
-            const resp = await fetch('/upload/staging');
-            const data = await resp.json();
-
-            if (!resp.ok || data.sucesso === false) {
-                showMessage(data.mensagem || 'Erro ao atualizar.', 'error');
-                return;
+        function setButtonLoading(buttonId, loading) {
+            const btn = document.getElementById(buttonId);
+            if (loading) {
+                btn.disabled = true;
+                const icon = btn.querySelector('.btn-icon');
+                icon.innerHTML = '<span class="loading"></span>';
+            } else {
+                btn.disabled = false;
+                const icon = btn.querySelector('.btn-icon');
+                if (buttonId === 'btnAtualizar') {
+                    icon.textContent = '🔄';
+                } else {
+                    icon.textContent = '📈';
+                }
             }
-
-            showMessage('ETL concluido com sucesso!', 'success');
-
-        } catch (e) {
-            showMessage('Erro: ' + e.message, 'error');
-        } finally {
-            setButtonLoading('btnAtualizar', false);
         }
-    }
 
-    async function mostrarGrafico() {
-        setButtonLoading('btnGrafico', true);
-        showMessage('Carregando graficos do Metabase...', 'info');
 
-        try {
-            await fetch('/upload/bi', { method: 'POST' });
-            const iframe = document.getElementById('metabaseIframe');
-            iframe.src = 'http://localhost:3000/public/dashboard/edefb48d-1a91-423a-a048-803b6688c976';
-            document.getElementById('metabaseContainer').style.display = 'block';
-            showMessage('Grafico carregado com sucesso!', 'success');
-        } catch (e) {
-            showMessage('Erro ao carregar o dashboard: ' + e.message, 'error');
-        } finally {
-            setButtonLoading('btnGrafico', false);
+        async function atualizarBancoDados() {
+            setButtonLoading('btnAtualizar', true);
+            showMessage('Atualizando banco de dados...', 'info');
+
+            try {
+                const resp = await fetch('/upload/staging', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await resp.json();
+
+                // Se a rota retornou exception formatada
+                if (!resp.ok || data.sucesso === false && !data.resumo) {
+                    const msg = data?.mensagem || 'Erro ao atualizar banco de dados';
+                    showMessage(msg, 'error');
+                    return;
+                }
+
+                // Temos resumo por etapa/tabela
+                const falhas = (data.resumo || []).filter(r => r.ok === false);
+                const okTudo = data.sucesso === true && falhas.length === 0;
+
+                if (okTudo) {
+                    const totalIns = (data.resumo || [])
+                        .map(r => r.inseridos || 0)
+                        .reduce((a, b) => a + b, 0);
+                    const totalUpd = (data.resumo || [])
+                        .map(r => r.atualizados || 0)
+                        .reduce((a, b) => a + b, 0);
+
+                    showMessage(
+                        `ETL concluído com sucesso. Inseridos: ${totalIns}, Atualizados: ${totalUpd}.`,
+                        'success'
+                    );
+                } else {
+                    // monta um sumário curto dos erros
+                    const detalhes = falhas
+                        .slice(0, 4) // evita mensagem gigante
+                        .map(f => `• ${f.tabela}: ${f.mensagem || 'falha'}`)
+                        .join(' | ');
+
+                    showMessage(
+                        `ETL executado com falhas. Verifique: ${detalhes}` +
+                        (falhas.length > 4 ? ` | (+${falhas.length - 4} itens)` : ''),
+                        'error'
+                    );
+                }
+            } catch (e) {
+                showMessage('Erro ao conectar com o servidor: ' + e.message, 'error');
+            } finally {
+                setButtonLoading('btnAtualizar', false);
+            }
         }
-    }
-</script>
+    </script>
 </body>
+
 </html>

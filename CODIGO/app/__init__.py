@@ -26,5 +26,14 @@ def create_app():
     from app.routes.dashboard import bp_dashboard
     app.register_blueprint(bp_dashboard)
 
+    # Metabase embed route (signed embed)
+    from app.routes.metabase_embed import bp_metabase
+    app.register_blueprint(bp_metabase)
+
+        # BI / PowerBI placeholder routes
+    # from app.routes.powerbi.upload_bi import bp_upload_bi
+    # app.register_blueprint(bp_upload_bi)
+
+
     return app
 

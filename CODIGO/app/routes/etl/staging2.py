@@ -6,6 +6,7 @@ from app.db.engine import get_engine
 from app.routes.etl.model import _rodar_etl_model
 from app.routes.etl.mart import _rodar_etl_mart
 from flasgger import swag_from
+from app.routes.etl.staging1 import criar_popular_staging1
 
 bp_staging2 = Blueprint('upload_staging', __name__)
 engine = get_engine()
@@ -23,7 +24,6 @@ def _rodar_etl_privacydocument(conn):
     # 1) Garante schema e tabela de destino
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacrei_privacydocument
         (
             id             INTEGER PRIMARY KEY,
@@ -33,10 +33,12 @@ def _rodar_etl_privacydocument(conn):
             terms_of_use   VARCHAR,
             profile_type   VARCHAR
         );
+                      
     """))
 
+    # 2) Upsert com limpeza e tipagem
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 (NULLIF(TRIM(id), ''))::INTEGER                                        AS id,
                 CASE
@@ -49,9 +51,18 @@ def _rodar_etl_privacydocument(conn):
                 END                                                                     AS updated_at,
                 NULLIF(privacy_policy, '')::VARCHAR                                     AS privacy_policy,
                 NULLIF(terms_of_use,   '')::VARCHAR                                     AS terms_of_use,
-                NULLIF(profile_type,   '')::VARCHAR                                     AS profile_type
+                NULLIF(profile_type,   '')::VARCHAR                                     AS profile_type,
+                ROW_NUMBER() OVER (PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER
+                                   ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC
+                                  ) AS rn
             FROM lacreisaude_staging_01.lacrei_privacydocument
             WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (
+            -- Mantém apenas a última linha por id (rn = 1) para evitar duplicatas no INSERT
+            SELECT id, created_at, updated_at, privacy_policy, terms_of_use, profile_type
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacrei_privacydocument
@@ -99,17 +110,16 @@ def _rodar_etl_appointment(conn):
     # 1) Cria schema/tabela/índices de destino conforme seu DDL
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_appointment
         (
-            id               INTEGER PRIMARY KEY,
+            id               VARCHAR PRIMARY KEY,
             created_at       TIMESTAMP WITHOUT TIME ZONE,
             updated_at       TIMESTAMP WITHOUT TIME ZONE,
             appointment_date TIMESTAMP WITHOUT TIME ZONE,
             status           VARCHAR,
             type             VARCHAR,
-            professional_id  INTEGER,
-            user_id          INTEGER,
+            professional_id  VARCHAR,
+            user_id          VARCHAR,
             agreement_id     VARCHAR
         )
         TABLESPACE pg_default;
@@ -137,19 +147,37 @@ def _rodar_etl_appointment(conn):
     # Observação: sua staging_01 já está tipada (timestamps/integers), então não aplico TRIM/casts de texto.
     # Se os dados vierem como texto em algum momento, podemos adaptar (como no privacydocument).
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
-                id::integer                         AS id,
-                created_at                           AS created_at,       -- timestamp sem tz (assumimos UTC armazenado)
-                updated_at                           AS updated_at,
-                date                                  AS appointment_date, -- renomeado
-                status::varchar                      AS status,
-                type::varchar                        AS type,
-                professional_id::integer             AS professional_id,
-                user_id::integer                     AS user_id,
-                agreement_id::varchar                AS agreement_id
+                id::varchar AS id,
+                CASE
+                    WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                    ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC')
+                END AS created_at,
+                CASE
+                    WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                    ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC')
+                END AS updated_at,
+                CASE
+                    WHEN NULLIF(TRIM(date), '') IS NULL THEN NULL
+                    ELSE (NULLIF(TRIM(date), '')::timestamptz AT TIME ZONE 'UTC')
+                END AS appointment_date,
+                status::varchar AS status,
+                type::varchar AS type,
+                professional_id::varchar AS professional_id,
+                user_id::varchar AS user_id,
+                agreement_id::varchar AS agreement_id,
+                ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(id), '')
+                                   ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC
+                                  ) AS rn
             FROM lacreisaude_staging_01.lacreiid_appointment
             WHERE id IS NOT NULL
+        ),
+        src AS (
+            -- Mantém apenas a última linha por id (rn = 1) para evitar duplicatas
+            SELECT id, created_at, updated_at, appointment_date, status, type, professional_id, user_id, agreement_id
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreiid_appointment
@@ -206,7 +234,6 @@ def _rodar_etl_cancellation(conn):
     # 1) Cria schema/tabela de destino (conforme seu DDL)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_cancellation
         (
             cancellation_id           VARCHAR PRIMARY KEY,
@@ -222,7 +249,7 @@ def _rodar_etl_cancellation(conn):
 
     # 2) Upsert com tipagem/limpeza
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 NULLIF(TRIM(id), '')::varchar AS cancellation_id,
 
@@ -250,9 +277,19 @@ def _rodar_etl_cancellation(conn):
                     ELSE NULL
                 END AS created_by_content_type_id,
 
-                NULLIF(TRIM(created_by_object_d), '')::varchar AS created_by_object_id
+                NULLIF(TRIM(created_by_object_d), '')::varchar AS created_by_object_id,
+
+                ROW_NUMBER() OVER (
+                    PARTITION BY NULLIF(TRIM(id), '')
+                    ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC
+                ) AS rn
             FROM lacreisaude_staging_01.lacreiid_cancellation
             WHERE NULLIF(TRIM(id), '') IS NOT NULL
+        ),
+        src AS (
+            SELECT cancellation_id, created_at, updated_at, reason, appointment_id, created_by_content_type_id, created_by_object_id
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreiid_cancellation
@@ -309,7 +346,6 @@ def _rodar_etl_profile(conn):
     # 1) Cria schema/tabela destino (conforme seu DDL)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_profile
         (
             profile_id           VARCHAR PRIMARY KEY,
@@ -335,7 +371,7 @@ def _rodar_etl_profile(conn):
 
     # 2) Upsert com limpeza/conversões
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 NULLIF(TRIM(id), '')::varchar AS profile_id,
 
@@ -386,10 +422,23 @@ def _rodar_etl_profile(conn):
                     ELSE NULL
                 END AS sexual_orientation,
 
-                NULLIF(TRIM(user_id), '')::varchar              AS user_id
+                NULLIF(TRIM(user_id), '')::varchar              AS user_id,
+
+                ROW_NUMBER() OVER (
+                    PARTITION BY NULLIF(TRIM(id), '')
+                    ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC
+                ) AS rn
 
             FROM lacreisaude_staging_01.lacreiid_profile
             WHERE NULLIF(TRIM(id), '') IS NOT NULL
+        ),
+        src AS (
+            SELECT profile_id, created_at, updated_at, other_ethnic_group, other_gender_identity,
+                   other_sexual_orientation, other_pronoun, other_disability_types, other_article,
+                   completed, photo, photo_description, ethnic_group, gender_identity, pronoun,
+                   sexual_orientation, user_id
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreiid_profile
@@ -448,11 +497,9 @@ def _rodar_etl_profile_disability_types(conn):
         if isinstance(e.orig, UndefinedTable):
             return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.lacreiid_profile_disability_types não encontrada."}
         raise
-
-    # 1) Cria schema/tabela destino (conforme seu DDL)
+    # 1) Cria schema/tabela destino ANTES de qualquer SELECT
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_profile_disability_types
         (
             id                INTEGER PRIMARY KEY,
@@ -460,14 +507,11 @@ def _rodar_etl_profile_disability_types(conn):
             disabilitytype_id INTEGER
         )
         TABLESPACE pg_default;
-
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreiid_profile_disability_types
-            OWNER TO postgres;
     """))
 
     # 2) Upsert com limpeza e tipagem
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 (NULLIF(TRIM(id), ''))::INTEGER                                 AS id,
                 NULLIF(TRIM(profile_id), '')::VARCHAR                           AS profile_id,
@@ -475,9 +519,18 @@ def _rodar_etl_profile_disability_types(conn):
                     WHEN NULLIF(TRIM(disabilitytype_id), '') ~ '^[0-9]+$'
                         THEN (NULLIF(TRIM(disabilitytype_id), '')::INTEGER)
                     ELSE NULL
-                END                                                             AS disabilitytype_id
+                END                                                             AS disabilitytype_id,
+                ROW_NUMBER() OVER (
+                    PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER
+                    ORDER BY (CASE WHEN NULLIF(TRIM(id), '') IS NULL THEN to_timestamp(0) ELSE to_timestamp(0) END) -- stable order
+                ) AS rn
             FROM lacreisaude_staging_01.lacreiid_profile_disability_types
             WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'   -- garante PK numérico
+        ),
+        src AS (
+            SELECT id, profile_id, disabilitytype_id
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreiid_profile_disability_types
@@ -528,7 +581,6 @@ def _rodar_etl_report(conn):
     # 1) Cria schema/tabela destino (DDL corrigido)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_report
         (
             report_id                   VARCHAR PRIMARY KEY,
@@ -536,14 +588,10 @@ def _rodar_etl_report(conn):
             updated_at                  TIMESTAMP WITHOUT TIME ZONE,
             feedback                    VARCHAR,
             eval                        INTEGER,
-            appointment_id              INTEGER,
+            appointment_id              VARCHAR,
             created_by_content_type_id  INTEGER,
             created_by_object_id        VARCHAR
-        )
-        TABLESPACE pg_default;
-
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreiid_report
-            OWNER TO postgres;
+        );
     """))
 
     # (Opcional) Índices úteis para consultas
@@ -557,7 +605,7 @@ def _rodar_etl_report(conn):
 
     # 2) Upsert com limpeza/conversões
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 NULLIF(TRIM(id), '')::varchar AS report_id,
 
@@ -579,7 +627,7 @@ def _rodar_etl_report(conn):
                     ELSE NULL
                 END AS eval,
 
-                appointment_id::integer AS appointment_id,
+                appointment_id::varchar AS appointment_id,
 
                 CASE
                     WHEN NULLIF(TRIM(created_by_content_type_id), '') ~ '^[0-9]+$'
@@ -587,10 +635,20 @@ def _rodar_etl_report(conn):
                     ELSE NULL
                 END AS created_by_content_type_id,
 
-                NULLIF(TRIM(created_by_object_id), '')::varchar AS created_by_object_id
+                NULLIF(TRIM(created_by_object_id), '')::varchar AS created_by_object_id,
+
+                ROW_NUMBER() OVER (
+                    PARTITION BY NULLIF(TRIM(id), '')
+                    ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC
+                ) AS rn
 
             FROM lacreisaude_staging_01.lacreiid_report
             WHERE NULLIF(TRIM(id), '') IS NOT NULL
+        ),
+        src AS (
+            SELECT report_id, created_at, updated_at, feedback, eval, appointment_id, created_by_content_type_id, created_by_object_id
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreiid_report
@@ -651,7 +709,6 @@ def _rodar_etl_user(conn):
     # 1) Cria schema/tabela destino (DDL corrigido e válido)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_user
         (
             user_id                              VARCHAR PRIMARY KEY,
@@ -679,8 +736,7 @@ def _rodar_etl_user(conn):
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreiid_user
-            OWNER TO postgres;
+        
     """))
 
     # (Opcional) Índices úteis para consultas
@@ -694,7 +750,7 @@ def _rodar_etl_user(conn):
     """))
 
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 NULLIF(TRIM(id), '')::varchar AS user_id,
                 NULLIF(password, '')::varchar AS password,
@@ -802,6 +858,13 @@ def _rodar_etl_user(conn):
             FROM lacreisaude_staging_01.lacreiid_user
             WHERE NULLIF(TRIM(id), '') IS NOT NULL
         ),
+        src AS (
+            -- Keep only the most recent row per user_id
+            SELECT * FROM (
+                SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY COALESCE(updated_at, created_at) DESC NULLS LAST) AS rn
+                FROM src_raw
+            ) t WHERE rn = 1
+        ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreiid_user
             (
@@ -890,7 +953,6 @@ def _rodar_etl_clinic(conn):
     # 1) Cria schema/tabela destino (DDL corrigido)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreisaude_clinic
         (
             clinic_id                           VARCHAR PRIMARY KEY,
@@ -915,14 +977,13 @@ def _rodar_etl_clinic(conn):
             online_clinic_consult_price         NUMERIC(10,2),
             online_clinic_duration_minutes      INTEGER,
             online_clinic_accepts_insurance_providers BOOLEAN,
-            professional_id                     INTEGER,
+            professional_id                     VARCHAR,
             registered_neighborhood_id          INTEGER,
             state_id                            INTEGER
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreisaude_clinic
-            OWNER TO postgres;
+        
     """))
 
     # Índices úteis para consultas
@@ -937,7 +998,7 @@ def _rodar_etl_clinic(conn):
 
     # 2) Upsert com limpeza/tipagem
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 NULLIF(TRIM(id), '')::varchar AS clinic_id,
 
@@ -1023,11 +1084,7 @@ def _rodar_etl_clinic(conn):
                     ELSE NULL
                 END AS online_clinic_accepts_insurance_providers,
 
-                CASE
-                    WHEN NULLIF(TRIM(professional_id), '') ~ '^[0-9]+$'
-                        THEN (NULLIF(TRIM(professional_id), '')::integer)
-                    ELSE NULL
-                END AS professional_id,
+                NULLIF(TRIM(professional_id), '')::varchar AS professional_id,
 
                 CASE
                     WHEN NULLIF(TRIM(registered_neighborhood_id), '') ~ '^[0-9]+$'
@@ -1043,6 +1100,13 @@ def _rodar_etl_clinic(conn):
 
             FROM lacreisaude_staging_01.lacreisaude_clinic
             WHERE NULLIF(TRIM(id), '') IS NOT NULL
+        ),
+        src AS (
+            -- Keep only the most recent row per clinic_id
+            SELECT * FROM (
+                SELECT *, ROW_NUMBER() OVER (PARTITION BY clinic_id ORDER BY COALESCE(updated_at, created_at) DESC NULLS LAST) AS rn
+                FROM src_raw
+            ) t WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreisaude_clinic
@@ -1128,37 +1192,31 @@ def _rodar_etl_professional(conn):
     # 1) DDL de destino (corrigido e válido)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreisaude_professional
         (
             professional_id              VARCHAR PRIMARY KEY,
             created_at                   TIMESTAMP WITHOUT TIME ZONE,
             updated_at                   TIMESTAMP WITHOUT TIME ZONE,
-
             other_ethnic_group           VARCHAR,
             other_gender_identity        VARCHAR,
             other_sexual_orientation     VARCHAR,
             other_pronoun                VARCHAR,
             other_disability_types       VARCHAR,
             other_article                VARCHAR,
-
             full_name                    VARCHAR,
             about_me                     VARCHAR,
             profile_status               VARCHAR,
             active                       BOOLEAN,
             published                    BOOLEAN,
-
             document_number              VARCHAR,
             board_registration_number    VARCHAR,
             accepted_privacy_document    BOOLEAN,
             safety_measures              VARCHAR,
-
             specialty                    VARCHAR,
             specialty_number_rqe         VARCHAR,
             board_certification_selfie   VARCHAR,
             photo                        VARCHAR,
             photo_description            VARCHAR,
-
             ethnic_group                 INTEGER,
             gender_identity              INTEGER,
             privacy_document_id          INTEGER,
@@ -1166,14 +1224,12 @@ def _rodar_etl_professional(conn):
             pronoun                      INTEGER,
             sexual_orientation           INTEGER,
             state_id                     INTEGER,
-
             user_id                      VARCHAR,
             search_synonym               VARCHAR
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreisaude_professional
-            OWNER TO postgres;
+        
     """))
 
     # Índices úteis
@@ -1190,7 +1246,7 @@ def _rodar_etl_professional(conn):
 
     # 2) Upsert com normalização
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 NULLIF(TRIM(id), '')::varchar AS professional_id,
 
@@ -1260,6 +1316,13 @@ def _rodar_etl_professional(conn):
 
             FROM lacreisaude_staging_01.lacreisaude_professional
             WHERE NULLIF(TRIM(id), '') IS NOT NULL
+        ),
+        src AS (
+            -- Keep only the most recent row per professional_id
+            SELECT * FROM (
+                SELECT *, ROW_NUMBER() OVER (PARTITION BY professional_id ORDER BY COALESCE(updated_at, created_at) DESC NULLS LAST) AS rn
+                FROM src_raw
+            ) t WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreisaude_professional
@@ -1352,7 +1415,6 @@ def _rodar_etl_professional_disability_types(conn):
     # 1) Cria schema/tabela destino (DDL válido)
     conn.execute(text("""
         CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
-
         CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreisaude_professional_disability_types
         (
             id                INTEGER PRIMARY KEY,
@@ -1361,8 +1423,7 @@ def _rodar_etl_professional_disability_types(conn):
         )
         TABLESPACE pg_default;
 
-        ALTER TABLE IF EXISTS lacreisaude_staging_02.lacreisaude_professional_disability_types
-            OWNER TO postgres;
+        
     """))
 
     # Índices úteis (consultas por professional_id / disabilitytype_id)
@@ -1375,7 +1436,7 @@ def _rodar_etl_professional_disability_types(conn):
 
     # 2) Upsert com limpeza e tipagem
     upsert_sql = """
-        WITH src AS (
+        WITH src_raw AS (
             SELECT
                 (NULLIF(TRIM(id), ''))::INTEGER                                   AS id,
                 NULLIF(TRIM(professional_id), '')::VARCHAR                         AS professional_id,
@@ -1383,9 +1444,18 @@ def _rodar_etl_professional_disability_types(conn):
                     WHEN NULLIF(TRIM(disabilitytype_id), '') ~ '^[0-9]+$'
                         THEN (NULLIF(TRIM(disabilitytype_id), '')::INTEGER)
                     ELSE NULL
-                END                                                                 AS disabilitytype_id
+                END                                                                 AS disabilitytype_id,
+                ROW_NUMBER() OVER (
+                    PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER
+                    ORDER BY (CASE WHEN NULLIF(TRIM(id), '') IS NULL THEN to_timestamp(0) ELSE to_timestamp(0) END)
+                ) AS rn
             FROM lacreisaude_staging_01.lacreisaude_professional_disability_types
             WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'  -- garante PK numérico
+        ),
+        src AS (
+            SELECT id, professional_id, disabilitytype_id
+            FROM src_raw
+            WHERE rn = 1
         ),
         upsert AS (
             INSERT INTO lacreisaude_staging_02.lacreisaude_professional_disability_types
@@ -1412,6 +1482,415 @@ def _rodar_etl_professional_disability_types(conn):
         "source_rows": int(row["elegiveis"])
     }
 
+
+def _rodar_etl_address_state(conn):
+    """
+    Staging_01.address_state  ➜  Staging_02.address_state
+
+    Tipagem proposta:
+      - id (text) -> INTEGER PK quando numérico
+      - created_at/updated_at (text) -> TIMESTAMP
+      - name/code/ibge_code (text) -> VARCHAR
+      - active (text) -> BOOLEAN
+      - country_id (text) -> INTEGER quando numérico
+    """
+    try:
+        conn.execute(text("SELECT 1 FROM lacreisaude_staging_01.address_state LIMIT 1"))
+    except ProgrammingError as e:
+        if isinstance(e.orig, UndefinedTable):
+            return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.address_state não encontrada."}
+        raise
+
+    conn.execute(text("""
+        CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
+
+        CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.address_state
+        (
+            id         INTEGER PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE,
+            updated_at TIMESTAMP WITHOUT TIME ZONE,
+            name       VARCHAR,
+            code       VARCHAR,
+            ibge_code  VARCHAR,
+            active     BOOLEAN,
+            country_id INTEGER
+        )
+        TABLESPACE pg_default;
+    """))
+
+    upsert_sql = """
+        WITH src_raw AS (
+            SELECT
+                (NULLIF(TRIM(id), ''))::INTEGER AS id,
+
+                CASE
+                    WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                    ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC')
+                END AS created_at,
+
+                CASE
+                    WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                    ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC')
+                END AS updated_at,
+
+                NULLIF(name, '')::varchar AS name,
+                NULLIF(code, '')::varchar AS code,
+                NULLIF(ibge_code, '')::varchar AS ibge_code,
+
+                CASE
+                    WHEN NULLIF(LOWER(TRIM(active)), '') IS NULL THEN NULL
+                    WHEN LOWER(TRIM(active)) IN ('true','t','1','yes','y','sim','s') THEN TRUE
+                    WHEN LOWER(TRIM(active)) IN ('false','f','0','no','n','nao','não') THEN FALSE
+                    ELSE NULL
+                END AS active,
+
+                CASE
+                    WHEN NULLIF(TRIM(country_id), '') ~ '^[0-9]+$' THEN (NULLIF(TRIM(country_id), '')::INTEGER)
+                    ELSE NULL
+                END AS country_id,
+
+                ROW_NUMBER() OVER (
+                    PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER
+                    ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC
+                ) AS rn
+
+            FROM lacreisaude_staging_01.address_state
+            WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (
+            SELECT id, created_at, updated_at, name, code, ibge_code, active, country_id
+            FROM src_raw
+            WHERE rn = 1
+        ),
+        upsert AS (
+            INSERT INTO lacreisaude_staging_02.address_state
+                (id, created_at, updated_at, name, code, ibge_code, active, country_id)
+            SELECT id, created_at, updated_at, name, code, ibge_code, active, country_id
+            FROM src
+            ON CONFLICT (id) DO UPDATE SET
+                created_at = EXCLUDED.created_at,
+                updated_at = EXCLUDED.updated_at,
+                name       = EXCLUDED.name,
+                code       = EXCLUDED.code,
+                ibge_code  = EXCLUDED.ibge_code,
+                active     = EXCLUDED.active,
+                country_id = EXCLUDED.country_id
+            RETURNING (xmax = 0) AS inserted_flag
+        )
+        SELECT
+            COALESCE(SUM(CASE WHEN inserted_flag THEN 1 ELSE 0 END), 0) AS inseridos,
+            COALESCE(SUM(CASE WHEN NOT inserted_flag THEN 1 ELSE 0 END), 0) AS atualizados,
+            (SELECT COUNT(*) FROM src) AS elegiveis
+        FROM upsert;
+    """
+
+    row = conn.execute(text(upsert_sql)).mappings().one()
+    return {
+        "ok": True,
+        "msg": f"ETL address_state: {int(row['inseridos'])} inseridos, {int(row['atualizados'])} atualizados (de {int(row['elegiveis'])} elegíveis).",
+        "inserted": int(row["inseridos"]),
+        "updated": int(row["atualizados"]),
+        "source_rows": int(row["elegiveis"])
+    }
+
+
+def _rodar_etl_disabilitytype(conn):
+    """
+    Staging_01.lacreiid_disabilitytype  ➜  Staging_02.lacreiid_disabilitytype
+
+    Popula a tabela de tipos de deficiência com id (INTEGER PK) e name (VARCHAR)
+    """
+    try:
+        conn.execute(text("SELECT 1 FROM lacreisaude_staging_01.lacreiid_disabilitytype LIMIT 1"))
+    except ProgrammingError as e:
+        if isinstance(e.orig, UndefinedTable):
+            return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.lacreiid_disabilitytype não encontrada."}
+        raise
+
+    conn.execute(text("""
+        CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
+
+        CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_disabilitytype
+        (
+            id INTEGER PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE,
+            updated_at TIMESTAMP WITHOUT TIME ZONE,
+            badge VARCHAR,
+            position_order INTEGER,
+            name VARCHAR
+        )
+        TABLESPACE pg_default;
+    """))
+
+    upsert_sql = """
+        WITH src_raw AS (
+            SELECT
+                (NULLIF(TRIM(id), ''))::INTEGER AS id,
+                CASE WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC') END AS created_at,
+                CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END AS updated_at,
+                NULLIF(badge, '')::varchar AS badge,
+                CASE WHEN NULLIF(TRIM(position_order), '') ~ '^[0-9]+$' THEN (NULLIF(TRIM(position_order), '')::INTEGER) ELSE NULL END AS position_order,
+                NULLIF(name, '')::varchar AS name,
+                ROW_NUMBER() OVER (PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC) AS rn
+
+            FROM lacreisaude_staging_01.lacreiid_disabilitytype
+            WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (
+            SELECT id, created_at, updated_at, badge, position_order, name
+            FROM src_raw WHERE rn = 1
+        ),
+        
+        upsert AS (
+            INSERT INTO lacreisaude_staging_02.lacreiid_disabilitytype
+                (id, created_at, updated_at, badge, position_order, name)
+            SELECT id, created_at, updated_at, badge, position_order, name FROM src
+            ON CONFLICT (id) DO UPDATE SET
+                created_at = EXCLUDED.created_at,
+                updated_at = EXCLUDED.updated_at,
+                badge = EXCLUDED.badge,
+                position_order = EXCLUDED.position_order,
+                name = EXCLUDED.name
+            RETURNING (xmax = 0) AS inserted_flag
+        )
+        SELECT
+            COALESCE(SUM(CASE WHEN inserted_flag THEN 1 ELSE 0 END), 0) AS inseridos,
+            COALESCE(SUM(CASE WHEN NOT inserted_flag THEN 1 ELSE 0 END), 0) AS atualizados,
+            (SELECT COUNT(*) FROM src) AS elegiveis
+        FROM upsert;
+    """
+
+    row = conn.execute(text(upsert_sql)).mappings().one()
+    return {"ok": True, "msg": f"ETL disabilitytype: {int(row['inseridos'])} inseridos, {int(row['atualizados'])} atualizados (de {int(row['elegiveis'])} elegíveis).", "inserted": int(row['inseridos']), "updated": int(row['atualizados']), "source_rows": int(row['elegiveis'])}
+
+
+def _rodar_etl_sexualorientation(conn):
+    try:
+        conn.execute(text("SELECT 1 FROM lacreisaude_staging_01.lacreiid_sexualorientation LIMIT 1"))
+    except ProgrammingError as e:
+        if isinstance(e.orig, UndefinedTable):
+            return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.lacreiid_sexualorientation não encontrada."}
+        raise
+
+    conn.execute(text("""
+        CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
+        CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_sexualorientation
+        (
+            id INTEGER PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE,
+            updated_at TIMESTAMP WITHOUT TIME ZONE,
+            bagde VARCHAR,
+            position_order INTEGER,
+            name VARCHAR
+        )
+        TABLESPACE pg_default;
+    """))
+
+    upsert_sql = """
+        WITH src_raw AS (
+            SELECT
+                (NULLIF(TRIM(id), ''))::INTEGER AS id,
+                CASE WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC') END AS created_at,
+                CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END AS updated_at,
+                NULLIF(bagde, '')::varchar AS bagde,
+                CASE WHEN NULLIF(TRIM(position_order), '') ~ '^[0-9]+$' THEN (NULLIF(TRIM(position_order), '')::INTEGER) ELSE NULL END AS position_order,
+                NULLIF(name, '')::varchar AS name,
+                ROW_NUMBER() OVER (PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC) AS rn
+        
+            FROM lacreisaude_staging_01.lacreiid_sexualorientation
+            WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (SELECT id, created_at, updated_at, bagde, position_order, name FROM src_raw WHERE rn = 1
+        ),
+        upsert AS (
+            INSERT INTO lacreisaude_staging_02.lacreiid_sexualorientation (id, created_at, updated_at, bagde, position_order, name)
+            SELECT id, created_at, updated_at, bagde, position_order, name FROM src
+            ON CONFLICT (id) DO UPDATE SET created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, bagde = EXCLUDED.bagde, position_order = EXCLUDED.position_order, name = EXCLUDED.name
+            RETURNING (xmax = 0) AS inserted_flag
+        )
+        SELECT COALESCE(SUM(CASE WHEN inserted_flag THEN 1 ELSE 0 END),0) AS inseridos,
+               COALESCE(SUM(CASE WHEN NOT inserted_flag THEN 1 ELSE 0 END),0) AS atualizados,
+               (SELECT COUNT(*) FROM src) AS elegiveis
+        FROM upsert;
+    """
+
+    row = conn.execute(text(upsert_sql)).mappings().one()
+    return {"ok": True, "msg": f"ETL sexualorientation: {int(row['inseridos'])} inseridos, {int(row['atualizados'])} atualizados (de {int(row['elegiveis'])} elegíveis).", "inserted": int(row['inseridos']), "updated": int(row['atualizados']), "source_rows": int(row['elegiveis'])}
+
+
+def _rodar_etl_pronoun(conn):
+    try:
+        conn.execute(text("SELECT 1 FROM lacreisaude_staging_01.lacreiid_pronoun LIMIT 1"))
+    except ProgrammingError as e:
+        if isinstance(e.orig, UndefinedTable):
+            return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.lacreiid_pronoun não encontrada."}
+        raise
+
+    conn.execute(text("""
+        CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
+        CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_pronoun
+        (
+            id INTEGER PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE,
+            updated_at TIMESTAMP WITHOUT TIME ZONE,
+            bagde VARCHAR,
+            position_order INTEGER,
+            article VARCHAR,
+            pronoun VARCHAR
+        )
+        TABLESPACE pg_default;
+    """))
+
+    upsert_sql = """
+        WITH src_raw AS (
+            SELECT
+                (NULLIF(TRIM(id), ''))::INTEGER AS id,
+                CASE WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC') END AS created_at,
+                CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END AS updated_at,
+                NULLIF(bagde, '')::varchar AS bagde,
+                CASE WHEN NULLIF(TRIM(position_order), '') ~ '^[0-9]+$' THEN (NULLIF(TRIM(position_order), '')::INTEGER) ELSE NULL END AS position_order,
+                NULLIF(article, '')::varchar AS article,
+                NULLIF(pronoun, '')::varchar AS pronoun,
+                ROW_NUMBER() OVER (PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC) AS rn
+                
+            FROM lacreisaude_staging_01.lacreiid_pronoun
+            WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (SELECT id, created_at, updated_at, bagde, position_order, article, pronoun FROM src_raw WHERE rn = 1
+        ),
+        upsert AS (
+            INSERT INTO lacreisaude_staging_02.lacreiid_pronoun (id, created_at, updated_at, bagde, position_order, article, pronoun)
+            SELECT id, created_at, updated_at, bagde, position_order, article, pronoun FROM src
+            ON CONFLICT (id) DO UPDATE SET created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, bagde = EXCLUDED.bagde, position_order = EXCLUDED.position_order, article = EXCLUDED.article, pronoun = EXCLUDED.pronoun
+            RETURNING (xmax = 0) AS inserted_flag
+        )
+        SELECT COALESCE(SUM(CASE WHEN inserted_flag THEN 1 ELSE 0 END),0) AS inseridos,
+               COALESCE(SUM(CASE WHEN NOT inserted_flag THEN 1 ELSE 0 END),0) AS atualizados,
+               (SELECT COUNT(*) FROM src) AS elegiveis
+        FROM upsert;
+    """
+
+    row = conn.execute(text(upsert_sql)).mappings().one()
+    return {"ok": True, "msg": f"ETL pronoun: {int(row['inseridos'])} inseridos, {int(row['atualizados'])} atualizados (de {int(row['elegiveis'])} elegíveis).", "inserted": int(row['inseridos']), "updated": int(row['atualizados']), "source_rows": int(row['elegiveis'])}
+
+
+def _rodar_etl_ethnicgroup(conn):
+    try:
+        conn.execute(text("SELECT 1 FROM lacreisaude_staging_01.lacreiid_ethnicgroup LIMIT 1"))
+    except ProgrammingError as e:
+        if isinstance(e.orig, UndefinedTable):
+            return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.lacreiid_ethnicgroup não encontrada."}
+        raise
+
+    conn.execute(text("""
+        CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
+        CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_ethnicgroup
+        (
+            id INTEGER PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE,
+            updated_at TIMESTAMP WITHOUT TIME ZONE,
+            bagde VARCHAR,
+            position_order INTEGER,
+            name VARCHAR
+        )
+        TABLESPACE pg_default;
+    """))
+
+    upsert_sql = """
+        WITH src_raw AS (
+            SELECT
+                (NULLIF(TRIM(id), ''))::INTEGER AS id,
+                CASE WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC') END AS created_at,
+                CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END AS updated_at,
+                NULLIF(bagde, '')::varchar AS bagde,
+                CASE WHEN NULLIF(TRIM(position_order), '') ~ '^[0-9]+$' THEN (NULLIF(TRIM(position_order), '')::INTEGER) ELSE NULL END AS position_order,
+                NULLIF(name, '')::varchar AS name,
+                ROW_NUMBER() OVER (PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC) AS rn
+                
+            FROM lacreisaude_staging_01.lacreiid_ethnicgroup
+            WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (SELECT id, created_at, updated_at, bagde, position_order, name FROM src_raw WHERE rn = 1
+        ),
+        upsert AS (
+            INSERT INTO lacreisaude_staging_02.lacreiid_ethnicgroup (id, created_at, updated_at, bagde, position_order, name)
+            SELECT id, created_at, updated_at, bagde, position_order, name FROM src
+            ON CONFLICT (id) DO UPDATE SET created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, bagde = EXCLUDED.bagde, position_order = EXCLUDED.position_order, name = EXCLUDED.name
+            RETURNING (xmax = 0) AS inserted_flag
+        )
+        SELECT COALESCE(SUM(CASE WHEN inserted_flag THEN 1 ELSE 0 END),0) AS inseridos,
+               COALESCE(SUM(CASE WHEN NOT inserted_flag THEN 1 ELSE 0 END),0) AS atualizados,
+               (SELECT COUNT(*) FROM src) AS elegiveis
+        FROM upsert;
+    """
+
+    row = conn.execute(text(upsert_sql)).mappings().one()
+    return {"ok": True, "msg": f"ETL ethnicgroup: {int(row['inseridos'])} inseridos, {int(row['atualizados'])} atualizados (de {int(row['elegiveis'])} elegíveis).", "inserted": int(row['inseridos']), "updated": int(row['atualizados']), "source_rows": int(row['elegiveis'])}
+
+
+def _rodar_etl_genderidentity(conn):
+    try:
+        conn.execute(text("SELECT 1 FROM lacreisaude_staging_01.lacreiid_genderidentity LIMIT 1"))
+    except ProgrammingError as e:
+        if isinstance(e.orig, UndefinedTable):
+            return {"ok": False, "msg": "Tabela fonte lacreisaude_staging_01.lacreiid_genderidentity não encontrada."}
+        raise
+
+    conn.execute(text("""
+        CREATE SCHEMA IF NOT EXISTS lacreisaude_staging_02;
+        CREATE TABLE IF NOT EXISTS lacreisaude_staging_02.lacreiid_genderidentity
+        (
+            id INTEGER PRIMARY KEY,
+            created_at TIMESTAMP WITHOUT TIME ZONE,
+            updated_at TIMESTAMP WITHOUT TIME ZONE,
+            bagde VARCHAR,
+            position_order INTEGER,
+            name VARCHAR
+        )
+        TABLESPACE pg_default;
+    """))
+
+    upsert_sql = """
+        WITH src_raw AS (
+            SELECT
+                (NULLIF(TRIM(id), ''))::INTEGER AS id,
+                CASE WHEN NULLIF(TRIM(created_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(created_at), '')::timestamptz AT TIME ZONE 'UTC') END AS created_at,
+                CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN NULL
+                     ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END AS updated_at,
+                NULLIF(bagde, '')::varchar AS bagde,
+                CASE WHEN NULLIF(TRIM(position_order), '') ~ '^[0-9]+$' THEN (NULLIF(TRIM(position_order), '')::INTEGER) ELSE NULL END AS position_order,
+                NULLIF(name, '')::varchar AS name,
+                ROW_NUMBER() OVER (PARTITION BY (NULLIF(TRIM(id), ''))::INTEGER ORDER BY (CASE WHEN NULLIF(TRIM(updated_at), '') IS NULL THEN to_timestamp(0) ELSE (NULLIF(TRIM(updated_at), '')::timestamptz AT TIME ZONE 'UTC') END) DESC) AS rn
+                
+            FROM lacreisaude_staging_01.lacreiid_genderidentity
+            WHERE NULLIF(TRIM(id), '') ~ '^[0-9]+$'
+        ),
+        src AS (SELECT id, created_at, updated_at, bagde, position_order, name FROM src_raw WHERE rn = 1
+        ),
+        upsert AS (
+            INSERT INTO lacreisaude_staging_02.lacreiid_genderidentity (id, created_at, updated_at, bagde, position_order, name)
+            SELECT id, created_at, updated_at, bagde, position_order, name FROM src
+            ON CONFLICT (id) DO UPDATE SET created_at = EXCLUDED.created_at, updated_at = EXCLUDED.updated_at, bagde = EXCLUDED.bagde, position_order = EXCLUDED.position_order, name = EXCLUDED.name
+            RETURNING (xmax = 0) AS inserted_flag
+        )
+        SELECT COALESCE(SUM(CASE WHEN inserted_flag THEN 1 ELSE 0 END),0) AS inseridos,
+               COALESCE(SUM(CASE WHEN NOT inserted_flag THEN 1 ELSE 0 END),0) AS atualizados,
+               (SELECT COUNT(*) FROM src) AS elegiveis
+        FROM upsert;
+    """
+
+    row = conn.execute(text(upsert_sql)).mappings().one()
+    return {"ok": True, "msg": f"ETL genderidentity: {int(row['inseridos'])} inseridos, {int(row['atualizados'])} atualizados (de {int(row['elegiveis'])} elegíveis).", "inserted": int(row['inseridos']), "updated": int(row['atualizados']), "source_rows": int(row['elegiveis'])}
+
 def _safe_run(name, func, conn):
     try:
         res = func(conn)
@@ -1429,6 +1908,7 @@ def _safe_run(name, func, conn):
 })
 def consultar_indicadores_resumo():
     try:
+        criar_popular_staging1()
         with engine.begin() as conn:
             # 1) Rode TODOS os ETLs aqui
             runs = []
@@ -1439,34 +1919,46 @@ def consultar_indicadores_resumo():
             runs.append(_safe_run("profile_disability_types", _rodar_etl_profile_disability_types, conn))
             runs.append(_safe_run("report",          _rodar_etl_report, conn))
             runs.append(_safe_run("user",            _rodar_etl_user, conn))
+            runs.append(_safe_run("address_state",   _rodar_etl_address_state, conn))
+            runs.append(_safe_run("disabilitytype", _rodar_etl_disabilitytype, conn))
+            runs.append(_safe_run("sexualorientation", _rodar_etl_sexualorientation, conn))
+            runs.append(_safe_run("pronoun", _rodar_etl_pronoun, conn))
+            runs.append(_safe_run("ethnicgroup", _rodar_etl_ethnicgroup, conn))
+            runs.append(_safe_run("genderidentity", _rodar_etl_genderidentity, conn))
             runs.append(_safe_run("clinic",          _rodar_etl_clinic, conn))
             runs.append(_safe_run("professional",    _rodar_etl_professional, conn))
             runs.append(_safe_run("professional_disability_types", _rodar_etl_professional_disability_types, conn))
 
+            # DEBUG: Adiciona retorno detalhado dos runs para diagnóstico
+            # Se algum ETL falhar, retorna imediatamente com o erro detalhado
+            for r in runs:
+                if not r["ok"]:
+                    return jsonify({
+                        "sucesso": False,
+                        "mensagem": f"Erro no ETL '{r['name']}': {r.get('msg')}",
+                        "etls": runs
+                    }), 500
+
             # 2) Amostras (ainda DENTRO do with)
             amostras = {}
-
             amostras["lacrei_privacydocument"] = [dict(r) for r in conn.execute(text("""
                 SELECT id, created_at, updated_at, profile_type
                 FROM lacreisaude_staging_02.lacrei_privacydocument
                 ORDER BY id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreiid_appointment"] = [dict(r) for r in conn.execute(text("""
                 SELECT id, appointment_date, status, professional_id, user_id
                 FROM lacreisaude_staging_02.lacreiid_appointment
                 ORDER BY appointment_date DESC NULLS LAST, id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreiid_cancellation"] = [dict(r) for r in conn.execute(text("""
                 SELECT cancellation_id, created_at, reason, appointment_id
                 FROM lacreisaude_staging_02.lacreiid_cancellation
                 ORDER BY created_at DESC NULLS LAST, cancellation_id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreiid_profile"] = [dict(r) for r in conn.execute(text("""
                 SELECT profile_id, created_at, completed, user_id,
                        ethnic_group, gender_identity, pronoun, sexual_orientation
@@ -1474,21 +1966,18 @@ def consultar_indicadores_resumo():
                 ORDER BY updated_at DESC NULLS LAST, profile_id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreiid_profile_disability_types"] = [dict(r) for r in conn.execute(text("""
                 SELECT id, profile_id, disabilitytype_id
                 FROM lacreisaude_staging_02.lacreiid_profile_disability_types
                 ORDER BY id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreiid_report"] = [dict(r) for r in conn.execute(text("""
                 SELECT report_id, created_at, eval, appointment_id
                 FROM lacreisaude_staging_02.lacreiid_report
                 ORDER BY created_at DESC NULLS LAST, report_id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreiid_user"] = [dict(r) for r in conn.execute(text("""
                 SELECT user_id, email, is_active, is_staff, is_superuser,
                        last_login, privacy_document_id
@@ -1496,7 +1985,6 @@ def consultar_indicadores_resumo():
                 ORDER BY updated_at DESC NULLS LAST, user_id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreisaude_clinic"] = [dict(r) for r in conn.execute(text("""
                 SELECT clinic_id, name, city, state_id, consult_price,
                        is_presential_clinic, is_online_clinic
@@ -1504,7 +1992,6 @@ def consultar_indicadores_resumo():
                 ORDER BY updated_at DESC NULLS LAST, clinic_id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreisaude_professional"] = [dict(r) for r in conn.execute(text("""
                 SELECT professional_id, full_name, profile_status,
                        active, published, profession_id, state_id
@@ -1512,7 +1999,6 @@ def consultar_indicadores_resumo():
                 ORDER BY updated_at DESC NULLS LAST, professional_id DESC
                 LIMIT 20
             """)).mappings().all()]
-
             amostras["lacreisaude_professional_disability_types"] = [dict(r) for r in conn.execute(text("""
                 SELECT id, professional_id, disabilitytype_id
                 FROM lacreisaude_staging_02.lacreisaude_professional_disability_types
@@ -1521,21 +2007,34 @@ def consultar_indicadores_resumo():
             """)).mappings().all()]
 
             # 3) Resumo ainda DENTRO do with
+            # Normaliza resultados para evitar NoneType quando algum ETL retornar inesperadamente None
+            normalized_runs = []
+            for r in runs:
+                if isinstance(r, dict):
+                    normalized_runs.append(r)
+                else:
+                    normalized_runs.append({
+                        "name": getattr(r, "name", "unknown") if hasattr(r, "name") else "unknown",
+                        "ok": False,
+                        "msg": "ETL returned no result (None)",
+                        "source_rows": 0,
+                        "inserted": 0,
+                        "updated": 0
+                    })
+
             resumo = [{
-                "tabela": r["name"],
-                "ok": r["ok"],
+                "tabela": r.get("name"),
+                "ok": r.get("ok"),
                 "mensagem": r.get("msg"),
                 "linhas_elegiveis": r.get("source_rows", 0),
                 "inseridos": r.get("inserted", 0),
                 "atualizados": r.get("updated", 0)
-            } for r in runs]
+            } for r in normalized_runs]
 
-            model_res = _rodar_etl_model(conn)
+            model_res = _rodar_etl_model(conn) or {"ok": False, "msg": "MODEL ETL returned no result"}
+            mart_res = _rodar_etl_mart(conn) or {"ok": False, "msg": "MART ETL returned no result"}
 
-            # 5) ETL da MART (logo depois da model), ainda DENTRO do with
-            mart_res = _rodar_etl_mart(conn)
-
-            sucesso = all(r["ok"] for r in runs) and model_res.get("ok", False) and mart_res.get("ok", False)
+            sucesso = all(r.get("ok", False) for r in normalized_runs) and model_res.get("ok", False) and mart_res.get("ok", False)
             resposta = {
                 "sucesso": sucesso,
                 "resumo": (
@@ -1543,11 +2042,9 @@ def consultar_indicadores_resumo():
                     + [{"tabela": "MODEL", "ok": model_res.get("ok", False), "mensagem": model_res.get("msg")}]
                     + [{"tabela": "MART",  "ok": mart_res.get("ok",  False), "mensagem": mart_res.get("msg")}]
                 ),
-                "amostras": amostras
+                "amostras": amostras,
+                "etls": runs # DEBUG: Retorna detalhes dos ETLs para diagnóstico
             }
-
-        # Fora do with, só retorna (não usa mais conn)
         return jsonify(resposta), 200
-
     except Exception as e:
         return jsonify({"sucesso": False, "mensagem": f"Erro inesperado: {str(e)}"}), 500
