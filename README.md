@@ -33,8 +33,12 @@ BI para Gestão do Impacto da empresa na saúde de pessoas LGBTQIAPN+
 
 # Código
 
-<li><a href="src/README.md"> Código Fonte</a></li>
+<li><a href="CODIGO/"> Código Fonte</a></li>
 
 # Apresentação
 
-<li><a href="presentation/README.md"> Apresentação da solução</a></li>
+<li><a href="docs/"> Apresentação da solução</a></li>
+
+# Guia de Migração da Aplicação
+
+<li><a href="docs/"> Acesse o guia</a></li>
