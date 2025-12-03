@@ -307,7 +307,8 @@ PostgreSQL → Python API → [Extração → Transformação → Carga] → Ama
 
 **3. Sucesso**
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/204c5b25-d586-4d2c-97e2-ffc6ca7bb52d" />
+
+<img width="1498" height="927" alt="2025-12-02 (23)" src="https://github.com/user-attachments/assets/902ac2b9-3dcd-4c67-be41-c2e28dac49cd" />
 
 
 **4. Erro**
