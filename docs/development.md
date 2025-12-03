@@ -53,17 +53,17 @@ As tabelas a seguir apresentam os requisitos funcionais e não-funcionais que re
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
-| appointment_sk | INTEGER | Chave substituta primária |
-| patient_sk | INTEGER | FK para dim_patient |
-| professional_sk | INTEGER | FK para dim_professional |
-| clinic_sk | INTEGER | FK para dim_clinic |
-| report_sk | INTEGER | FK para dim_report |
-| cancellation_sk | INTEGER | FK para dim_cancellation |
-| created_date_sk | INTEGER | FK para dim_date (data de criação) |
-| appointment_date_sk | INTEGER | FK para dim_date (data do agendamento) |
-| waiting_time_days | INTEGER | Tempo de espera em dias |
-| is_cancelled | BOOLEAN | Indica se foi cancelado |
-| is_completed | BOOLEAN | Indica se foi concluído |
+| appointment_id | INTEGER | Chave substituta primária |
+| appointment_figerprint | VARCHAR | Hash de cada atendimento |
+| patient_id | INTEGER | FK para dim_patient |
+| professional_id | INTEGER | FK para dim_professional |
+| clinic_id | INTEGER | FK para dim_clinic |
+| report_id | INTEGER | FK para dim_report |
+| created_date_id | INTEGER | FK para dim_date (data de criação) |
+| date_id | INTEGER | FK para dim_date (data do agendamento) |
+| waiting_time | INTEGER | Tempo de espera em dias |
+| cancellation_reason | VARCHAR | Motivo do cancelamento |
+| cancellation_created_at | TIMESTAMP | Data do cancelamento | 
 
 #### Dimensões
 
@@ -85,10 +85,6 @@ As tabelas a seguir apresentam os requisitos funcionais e não-funcionais que re
 **`dim_lacreisaude_report`** - Feedbacks/Avaliações
 - Avaliações dos profissionais pelos pacientes
 - Campos: nota (evaluation), feedback textual
-
-**`dim_lacreisaude_cancellation`** - Cancelamentos
-- Motivos de cancelamento de consultas
-- Campos: data, razão do cancelamento
 
 ---
 
@@ -161,7 +157,7 @@ Agregação mensal por profissional com métricas de atendimentos.
 
 ## 🌐 Ambiente de Produção
 
-**URL do Portal:** http://44.197.116.219/
+**URL do Portal:** http://18.212.222.62/
 
 ### Funcionalidades do Portal:
 
