@@ -306,26 +306,9 @@ PostgreSQL → Python API → [Extração → Transformação → Carga] → Ama
 ```
 
 **3. Sucesso**
-```
-┌─────────────────────────────────────┐
-│  ✅ Dados Atualizados com Sucesso!  │
-├─────────────────────────────────────┤
-│                                     │
-│  O pipeline ETL foi executado       │
-│  completamente.                     │
-│                                     │
-│  Resultados:                        │
-│  • Staging 1: 10.234 registros      │
-│  • Staging 2: 10.234 registros      │
-│  • Models: 7 tabelas                │
-│  • Marts: 4 tabelas                 │
-│                                     │
-│  Os dashboards foram atualizados.   │
-│                                     │
-│         [    FECHAR    ]            │
-│                                     │
-└─────────────────────────────────────┘
-```
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/204c5b25-d586-4d2c-97e2-ffc6ca7bb52d" />
+
 
 **4. Erro**
 ```
