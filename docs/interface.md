@@ -285,24 +285,24 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 
 **`fact_lacreisaude_appointments`** (centro do schema)
 - Campos chave:
-  - `appointment_sk` (PK, INT)
+  - `appointment_id` (PK, INT)
   - `appointment_fingerprint` (VARCHAR)
-  - `created_date_sk` (FK para dim_date, INT NN)
-  - `appointment_date_sk` (FK para dim_date, INT NN)
+  - `created_date_id` (FK para dim_date, INT NN)
+  - `date_id` (FK para dim_date, INT NN)
   - `status` (VARCHAR, NN)
   - `type` (VARCHAR, NN)
   - `waiting_time` (DECIMAL)
-  - `professional_sk` (FK, INT NN)
-  - `patient_sk` (FK, INT NN)
-  - `clinic_sk` (FK, INT)
-  - `report_sk` (FK, INT)
+  - `professional_id` (FK, INT NN)
+  - `patient_id` (FK, INT NN)
+  - `clinic_id` (FK, INT)
+  - `report_id` (FK, INT)
   - `cancellation_reason` (TIMESTAMP)
   - `cancellation_created_at` (VARCHAR)
 
 **Dimensões (Star Schema):**
 
 **1. `dim_lacreisaude_patient`** (esquerda inferior)
-- `patient_sk` (PK)
+- `patient_id` (PK)
 - `patient_key` (VARCHAR)
 - `created_at`, `first_name` (NULL), `last_name` (NULL)
 - `birth_date`, `is_active`
@@ -311,12 +311,12 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 - `sexual_orientation`, `disability_type` (TEXT[])
 
 **2. `dim_lacreisaude_date`** (esquerda superior)
-- `date_sk` (PK)
+- `date_id` (PK)
 - `calendar_date` (DATE NN)
 - `day`, `month`, `year`, `week`, `quarter` (INT NN)
 
 **3. `dim_lacreisaude_clinic`** (topo centro)
-- `clinic_sk` (PK)
+- `clinic_id` (PK)
 - `created_at`, `is_presential_clinic`, `is_online_clinic`
 - `name`, `zip_code`, `city`, `state`
 - `consult_price` (NUMERIC), `duration_minutes` (INT)
@@ -324,7 +324,7 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 - Campos para clínica online (price, duration, insurance)
 
 **4. `dim_lacreisaude_professional`** (direita superior)
-- `professional_sk` (PK)
+- `professional_id` (PK)
 - `profile_status`, `active`, `published`
 - `specialty`, `ethnic_group`
 - `gender_identity`, `pronoun`
@@ -332,7 +332,7 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 - `state`, `disability_type` (TEXT[])
 
 **5. `dim_lacreisaude_report`** (inferior centro)
-- `report_sk` (PK)
+- `report_id` (PK)
 - `created_at` (TIMESTAMP)
 - `feedback` (VARCHAR)
 - `evaluation` (INT) - nota de avaliação
