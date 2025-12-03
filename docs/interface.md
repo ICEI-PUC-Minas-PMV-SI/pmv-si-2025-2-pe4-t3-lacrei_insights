@@ -609,19 +609,6 @@ Dashboard do **Metabase** focado em métricas de pacientes:
 - **Insight:** Crescimento acelerado recente
 
 
-## 📸 Sumário das Telas
-
-| # | Tela | Arquivo | Requisitos Atendidos |
-|---|------|---------|---------------------|
-| 1 | **Tela de Login** | RF-10, RNF-06, RNF-08 |
-| 2 | **Dashboard Home**  | RF-10, RF-11, RF-12, RNF-04 |
-| 3 | **Dashboard Atendimentos** | RF-04, RF-05, RF-08, RNF-02, RNF-03 |
-| 4 | **Dashboard Pacientes** | RF-05, RF-08, RNF-02, RNF-03 |
-| 5 | **Arquitetura ETL** | RF-01, RF-02, RF-03, RNF-05 |
-| 6 | **Modelo Star Schema**| RF-03, RF-09 |
-
----
-
 ## 🎨 Análise de Design
 
 ### Identidade Visual
@@ -634,7 +621,7 @@ Dashboard do **Metabase** focado em métricas de pacientes:
 - **Acentos:** Roxo #8B5CF6 (gráficos Metabase)
 
 **Typography:**
-- Sans-serif moderna (provavelmente Inter ou similar)
+- Sans-serif moderna 
 - Hierarquia clara: H1 (títulos grandes) → Body (textos descritivos)
 
 ### Padrões de UI
@@ -703,34 +690,5 @@ Dashboard do **Metabase** focado em métricas de pacientes:
 - **Autenticação:** JWT em cookies httpOnly
 - **ETL Status:** React Context API
 - **UI State:** useState/useReducer
-
----
-
-## ✅ Checklist de Requisitos Atendidos (Com Evidências Visuais)
-
-### Requisitos Funcionais
-
-| Código | Descrição | Status | Evidência (Tela) |
-|--------|-----------|--------|------------------|
-| RF-10 | Portal web com autenticação | ✅ | Login Screen + Dashboard Home |
-| RF-11 | Botão "Atualizar Dados" funcional | ✅ | Dashboard Home (Card ETL) |
-| RF-12 | Navegação para dashboards | ✅ | Dashboard Home (Card BI) |
-| RF-04 | Dashboards Metabase integrados | ✅ | Dashboard Atendimentos + Pacientes |
-| RF-05 | Visualizações de KPIs | ✅ | Todos os dashboards (métricas visíveis) |
-| RF-01 | Extração de dados | ✅ | Diagrama ETL (Etapa 1) |
-| RF-02 | Processo ETL automatizado | ✅ | Diagrama ETL (Python API) |
-| RF-03 | Data Warehouse centralizado | ✅ | Diagrama Star Schema |
-| RF-09 | Data Marts temáticos | ✅ | Tabelas visíveis no modelo |
-
-### Requisitos Não Funcionais
-
-| Código | Descrição | Status | Evidência |
-|--------|-----------|--------|-----------|
-| RNF-02 | Compatibilidade navegadores modernos | ✅ | Interface responsiva observada |
-| RNF-04 | Portal responsivo (desktop/mobile) | ✅ | Layout adaptável nas telas |
-| RNF-06 | Autenticação e controle de acesso | ✅ | Tela de Login + Botão "Sair" |
-| RNF-08 | Acessibilidade WCAG 2.1 | ✅ | Contraste adequado, labels claros |
-| RNF-03 | Tempo de resposta < 5s | ✅ | Dashboards carregados rapidamente |
-| RNF-05 | ETL automatizado e documentado | ✅ | Diagrama ETL com 3 etapas claras |
 
 ---
