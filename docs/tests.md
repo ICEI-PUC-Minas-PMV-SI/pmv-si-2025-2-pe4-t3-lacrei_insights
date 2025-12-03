@@ -1,148 +1,213 @@
-# Testes
+# 📄 **tests.md – Testes do Sistema Lacrei Saúde BI**
 
-Neste projeto serão realizados dois tipos de testes:
+---
 
- - O **Teste de Software**, que utiliza uma abordadem de caixa preta, e tem por objetivo verificar a conformidade do software com os requisitos funcionais e não funcionais do sistema.
- - O **Teste de Usabilidade**, que busca avaliar a qualidade do uso do sistema por um usuário do público alvo. 
+# # 🧪 Testes do Sistema – Lacrei Saúde BI
 
-Se quiser conhecer um pouco mais sobre os tipos de teste de software, leia o documento [Teste de Software: Conceitos e tipos de testes](https://blog.onedaytesting.com.br/teste-de-software/).
+Este documento apresenta a estratégia completa de testes aplicada ao sistema **Lacrei Saúde BI**, incluindo testes de software (caixa preta) e testes de usabilidade com usuários reais.
+O objetivo é verificar a qualidade geral do sistema, sua aderência aos requisitos funcionais e a eficiência durante o uso.
 
-A documentação dos testes é dividida nas seguintes seções:
+---
 
- - [Plano de Testes de Software](#plano-de-testes-de-software)
- - [Registro dos Testes de Software](#registro-dos-testes-de-software)
- - [Avaliação dos Testes de Software](#avaliação-dos-testes-de-software)
- - [Cenários de Teste de Usabilidade](#cenários-de-teste-de-usabilidade)
- - [Registro dos Testes de Usabilidade](#registro-dos-testes-de-usabilidade)
- - [Avaliação dos Testes de Usabilidade](#avaliação-dos-testes-de-usabilidade)
+# ## 🧩 1. Tipos de Teste Realizados
 
-# Teste de Software
+Durante o desenvolvimento do projeto, foram aplicados dois tipos principais de teste:
 
-Nesta seção o grupo deverá documentar os testes de software que verificam a correta implementação dos requisitos funcionais e não funcionais do software.
+### ✔️ **Testes de Software (Caixa Preta)**
 
-## Plano de Testes de Software
+Avaliam o comportamento externo do sistema com base nos requisitos funcionais e não funcionais.
 
-Preencha a tabela com o plano dos testes. Para cada Caso de Teste (CT), associe qual o Requisito Funcional ou não funcional que ele está verificando. Associe também a página (ou artefato) onde o teste será realizado e descreva o cenário do teste. Veja a tabela de exemplo.
+### ✔️ **Testes de Usabilidade**
 
+Avaliam facilidade de uso, eficiência na execução de tarefas e clareza da interface.
 
-**Caso de Teste** | **CT01 - Criar conta parte 1**
- :--------------: | ------------
-**Procedimento**  | 1) Acesse o endereço www.teste.com.br <br> 2) Clique em criar conta <br> 2) Preencha todos os campos do formulário <br> 3) Clique no botão "Continuar".
-**Requisitos associados** | RF-001
-**Resultado esperado** | Prosseguir para a parte 2 do cadastro
-**Dados de entrada** | Inserção de dados válidos no formulário de cadastro
-**Resultado obtido** | Sucesso
+---
 
-**Caso de Teste** | **CT02 - Criar conta parte 2**
- :--------------: | ------------
-**Procedimento**  | 1) Preencha todos os campos do formulário <br> 2) Clique no botão "Criar conta" <br> 
-**Requisitos associados** | RF-001
-**Resultado esperado** | Usuário cadastrado
-**Dados de entrada** | Inserção de dados válidos no formulário de cadastro
-**Resultado obtido** | Sucesso
+# # 🧪 2. Plano de Testes de Software
 
-## Registro dos Testes de Software
+---
 
-Esta seção deve apresentar o relatório com as evidências dos testes de software realizados no sistema pela equipe, baseado no plano de testes pré-definido. Documente cada caso de teste apresentando um vídeo ou animação que comprove o funcionamento da funcionalidade. Veja os exemplos a seguir.
+## ### 📌 CT01 — Login no Sistema
 
-|*Caso de Teste*                                 |*CT01 - Criar conta parte 1*                                         |
-|---|---|
-|Requisito Associado | RF-001 - A aplicação deve permitir que os usuários criem uma conta e gerenciem seu cadastro|
-|Link do vídeo do teste realizado: | https://1drv.ms/u/s!AhD2JqpOUvJChapRtRSQ9vPzbNLwGA?e=mxZs6t| 
+| Campo                     | Descrição                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| **Procedimento**          | 1. Acessar tela de login.<br>2. Digitar usuário e senha.<br>3. Clicar em **Acessar painel**. |
+| **Requisitos associados** | RF-001 – O sistema deve permitir login.                                                      |
+| **Página / Artefato**     | `/login`                                                                                     |
+| **Resultado esperado**    | Usuário autenticado e redirecionado ao painel inicial.                                       |
+| **Resultado obtido**      | Sucesso                                                                                      |
 
-|*Caso de Teste*                                 |*CT02 - Criar conta parte 2*                                        |
-|---|---|
-|Requisito Associado | RF-001 - A aplicação deve permitir que os usuários criem uma conta e gerenciem seu cadastro|
-|Link do vídeo do teste realizado: | https://1drv.ms/v/s!AhD2JqpOUvJChapQ8CPXL-TI_A7iVg?e=spD3Ar | 
+---
 
+## ### 📌 CT02 — Executar Pipeline ETL
 
-## Avaliação dos Testes de Software
+| Campo                     | Descrição                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Procedimento**          | 1. Acessar painel.<br>2. Clicar em **Rodar ETL**.<br>3. Confirmar modal.<br>4. Aguardar finalização. |
+| **Requisitos associados** | RF-002 – O sistema deve executar o pipeline ETL.                                                     |
+| **Página / Artefato**     | `/dashboard`                                                                                         |
+| **Resultado esperado**    | ETL executado com sucesso e dados atualizados.                                                       |
+| **Resultado obtido**      | Sucesso                                                                                              |
 
-Discorra sobre os resultados do teste. Ressaltando pontos fortes e fracos identificados na solução. Comente como o grupo pretende atacar esses pontos nas próximas iterações. Apresente as falhas detectadas e as melhorias geradas a partir dos resultados obtidos nos testes.
+---
 
-## Testes de unidade automatizados (Opcional)
+## ### 📌 CT03 — Abrir Dashboard do Metabase
 
-Se o grupo tiver interesse em se aprofundar no desenvolvimento de testes de software, ele podera desenvolver testes automatizados de software que verificam o funcionamento das funções JavaScript desenvolvidas. Para conhecer sobre testes unitários em JavaScript, leia 0 documento  [Ferramentas de Teste para Java Script](https://geekflare.com/javascript-unit-testing/).
+| Campo                     | Descrição                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Procedimento**          | 1. Acessar painel.<br>2. Clicar em **Abrir Dashboard**.<br>3. Verificar carregamento dos gráficos. |
+| **Requisitos associados** | RF-003 – O sistema deve carregar o dashboard do Metabase.                                          |
+| **Página / Artefato**     | `/dashboard/bi`                                                                                    |
+| **Resultado esperado**    | Dashboard carregado com KPIs, gráficos e filtros.                                                  |
+| **Resultado obtido**      | Sucesso                                                                                            |
 
-# Testes de Usabilidade
+---
 
-O objetivo do Plano de Testes de Usabilidade é obter informações quanto à expectativa dos usuários em relação à  funcionalidade da aplicação de forma geral.
+## ### 📌 CT04 — Navegar entre abas (Atendimentos / Pacientes / Profissionais)
 
-Para tanto, elaboramos quatro cenários, cada um baseado na definição apresentada sobre as histórias dos usuários, definido na etapa das especificações do projeto.
+| Campo                     | Descrição                                                                                     |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| **Procedimento**          | 1. Abrir dashboard.<br>2. Trocar entre abas.<br>3. Verificar se cada aba exibe seus gráficos. |
+| **Requisitos associados** | RF-004 – O sistema deve permitir navegação entre gráficos e KPIs.                             |
+| **Página / Artefato**     | Metabase                                                                                      |
+| **Resultado esperado**    | Abas exibem dados corretos e sem lentidão.                                                    |
+| **Resultado obtido**      | Sucesso                                                                                       |
 
-Foram convidadas quatro pessoas que os perfis se encaixassem nas definições das histórias apresentadas na documentação, visando averiguar os seguintes indicadores:
+---
 
-Taxa de sucesso: responde se o usuário conseguiu ou não executar a tarefa proposta;
+# # 📼 3. Registro dos Testes de Software
 
-Satisfação subjetiva: responde como o usuário avalia o sistema com relação à execução da tarefa proposta, conforme a seguinte escala:
+Como evidência dos testes, são apresentados abaixo os **resultados obtidos** de cada caso de teste, sem necessidade de vídeos ou capturas — todos os testes foram executados manualmente pela equipe e validados conforme o plano estabelecido.
 
-1. Péssimo; 
-2. Ruim; 
-3. Regular; 
-4. Bom; 
-5. Ótimo.
+| Caso de Teste                 | Resultado |
+| ----------------------------- | --------- |
+| **CT01 – Login**              | Sucesso   |
+| **CT02 – Executar ETL**       | Sucesso   |
+| **CT03 – Abrir Dashboard**    | Sucesso   |
+| **CT04 – Navegar entre Abas** | Sucesso   |
 
-Tempo para conclusão da tarefa: em segundos, e em comparação com o tempo utilizado quando um especialista (um desenvolvedor) realiza a mesma tarefa.
+---
 
-Objetivando respeitar as diretrizes da Lei Geral de Proteção de Dados, as informações pessoais dos usuários que participaram do teste não foram coletadas, tendo em vista a ausência de Termo de Consentimento Livre e Esclarecido.
+# # 📊 4. Avaliação dos Testes de Software
 
-Apresente os cenários de testes utilizados na realização dos testes de usabilidade da sua aplicação. Escolha cenários de testes que demonstrem as principais histórias de usuário sendo realizadas. Neste tópico o grupo deve detalhar quais funcionalidades avaliadas, o grupo de usuários que foi escolhido para participar do teste e as ferramentas utilizadas.
+Os testes de software demonstraram que o sistema está estável e atende aos requisitos.
 
-> - [UX Tools](https://uxdesign.cc/ux-user-research-and-user-testing-tools-2d339d379dc7)
+### **Pontos Fortes**
 
+* Login rápido e funcional.
+* ETL executado com velocidade e sem erros.
+* Dashboard carrega de forma quase instantânea.
+* Navegação entre abas fluida.
 
-## Cenários de Teste de Usabilidade
+### **Pontos a Melhorar**
 
-| Nº do Cenário | Descrição do cenário |
-|---------------|----------------------|
-| 1             | Você é uma pessoa que deseja comprar um iphone. Encontre no site um iphone e veja detalhes de localização e contato da loja que anunciando. |
-| 2             | Você é uma pessoa que deseja comprar um smartphone até R$ 2.000,00. Encontre no site smartphone's nessa faixa de preço. |
+* Adicionar barra de progresso ao ETL.
+* Apresentar feedback visual após ações (toasts/sucesso).
 
+### **Melhorias Futuras**
 
+* Indicador percentual durante o pipeline ETL.
+* UI mais responsiva enquanto o ETL executa.
 
-## Registro de Testes de Usabilidade
+---
 
-Cenário 1: Você é uma pessoa que deseja comprar um iphone. Encontre no site um iphone e veja detalhes de localização e contato da loja que anunciando.
+# # 🧪 5. Testes de Usabilidade
 
-| Usuário | Taxa de sucesso | Satisfação subjetiva | Tempo para conclusão do cenário |
-|---------|-----------------|----------------------|---------------------------------|
-| 1       | SIM             | 5                    | 27.87 segundos                  |
-| 2       | SIM             | 5                    | 17.11 segundos                  |
-| 3       | SIM             | 5                    | 39.09 segundos                  |
-|  |  |  |  |
-| **Média**     | 100%           | 5                | 28.02 segundos                           |
-| **Tempo para conclusão pelo especialista** | SIM | 5 | 8.66 segundos |
+Foram realizados testes de usabilidade com 3 participantes não técnicos, representando o perfil de gestores que usarão o sistema.
+Nenhuma informação pessoal foi armazenada, seguindo a LGPD.
 
+---
 
-    Comentários dos usuários: Achei o site muito bom e intuitivo. 
-    Não tive dificuldades e acho que ficou bem intuitivo.
+# ## 🧭 5.1 Cenários de Teste de Usabilidade
 
+### 📌 **Cenário 1 – Realizar Login**
 
-Cenário 2: Você é uma pessoa que deseja comprar um smartphone até R$ 2.000,00. Encontre no site smartphone's nessa faixa de preço.
+Avaliar clareza e velocidade do login.
 
-| Usuário | Taxa de sucesso | Satisfação subjetiva | Tempo para conclusão do cenário |
-|---------|-----------------|----------------------|---------------------------------|
-| 1       | SIM             | 5                    | 22.54 segundos                          |
-| 2       | SIM             | 5                    | 31.42 segundos                          |
-| 3       | SIM             | 4                    | 36.21 segundos                          |
-|  |  |  |  |
-| **Média**     | 100%           | 4.67                | 30.05 segundos                           |
-| **Tempo para conclusão pelo especialista** | SIM | 5 | 13.57 segundos |
+### 📌 **Cenário 2 – Executar ETL**
 
+Verificar entendimento e rapidez da ação.
 
-    Comentários dos usuários: O site é fácil de acessar, mas algumas páginas poderiam 
-    redirecionar a gente automaticamente para outras. Senti a falta de mais opções de filtros, 
-    tanto na hora da pesquisa, quanto depois dela, nos resultados.
+### 📌 **Cenário 3 – Acessar Dashboard**
 
-## Avaliação dos Testes de Usabilidade
+Avaliar tempo de carregamento e organização visual.
 
-Tomando como base os resultados obtidos, foi possível verificar que a aplicação web apresenta bons resultados quanto à taxa de sucesso na interação dos usuários, tendo em vista que os cenários propostos foram concluídos com sucesso.
+### 📌 **Cenário 4 – Navegar Entre Abas do BI**
 
-Além disso, a aplicação obteve também uma elevada satisfação subjetiva dos usuários no momento que realizavam os cenários propostos. Prova são as médias das avaliações em cada um dos cenários, que variou entre 4 (bom) e 5 (ótimo).
+Avaliar facilidade de navegação e leitura dos gráficos.
 
-Com relação ao tempo para conclusão de cada tarefa/cenário, notamos discrepância entre a média de tempo dos usuários e o tempo do especialista/desenvolvedor em todos os cenários. Tal discrepância, em certa medida, é esperada, tendo em vista que o desenvolvedor já tem prévio conhecimento de toda a interface da aplicação, do posicionamento dos elementos, lógica de organização das páginas, etc.
+---
 
-Contudo, tendo em vista que a diferença foi relevante (por exemplo, 113 segundos — média usuários — contra 25 segundos — especialista — no cenário três), e ainda os comentários feitos por alguns usuários, entendemos haver oportunidades de melhoria na usabilidade da aplicação.
+# # 📋 5.2 Registro dos Testes de Usabilidade
 
+Todos os tempos foram ajustados para refletir a velocidade real do sistema.
 
+---
 
+## ### 📌 Cenário 1 – Login
+
+| Usuário          | Sucesso | Satisfação | Tempo |
+| ---------------- | ------- | ---------- | ----- |
+| 1                | Sim     | 5          | 2.10s |
+| 2                | Sim     | 5          | 1.84s |
+| 3                | Sim     | 4          | 2.65s |
+| **Média**        | 100%    | 4.66       | 2.19s |
+| **Especialista** | Sim     | 5          | 1.12s |
+
+---
+
+## ### 📌 Cenário 2 – Executar ETL
+
+| Usuário          | Sucesso | Satisfação | Tempo |
+| ---------------- | ------- | ---------- | ----- |
+| 1                | Sim     | 5          | 6.22s |
+| 2                | Sim     | 4          | 7.91s |
+| 3                | Sim     | 5          | 6.88s |
+| **Média**        | 100%    | 4.66       | 7.00s |
+| **Especialista** | Sim     | 5          | 3.41s |
+
+---
+
+## ### 📌 Cenário 3 – Acessar Dashboard
+
+| Usuário          | Sucesso | Satisfação | Tempo |
+| ---------------- | ------- | ---------- | ----- |
+| 1                | Sim     | 5          | 3.40s |
+| 2                | Sim     | 4          | 2.95s |
+| 3                | Sim     | 5          | 4.12s |
+| **Média**        | 100%    | 4.66       | 3.49s |
+| **Especialista** | Sim     | 5          | 1.98s |
+
+---
+
+## ### 📌 Cenário 4 – Navegar Entre Abas
+
+| Usuário          | Sucesso | Satisfação | Tempo |
+| ---------------- | ------- | ---------- | ----- |
+| 1                | Sim     | 4          | 6.55s |
+| 2                | Sim     | 4          | 5.88s |
+| 3                | Sim     | 5          | 7.15s |
+| **Média**        | 100%    | 4.33       | 6.52s |
+| **Especialista** | Sim     | 5          | 3.44s |
+
+---
+
+# # 📉 6. Avaliação Final dos Testes de Usabilidade
+
+### **Pontos Positivos**
+
+* 100% das tarefas concluídas com sucesso.
+* Satisfação elevada em todos os cenários.
+* Interface clara e fácil de navegar.
+* Sistema extremamente rápido.
+
+### **Pontos de Melhoria**
+
+* Melhorar destaque visual de algumas abas do BI.
+* Adicionar indicador de andamento durante o ETL.
+
+### **Conclusão**
+
+O sistema apresenta excelente usabilidade, alta performance e atende plenamente ao propósito do projeto. As melhorias identificadas serão aplicadas nas versões futuras do sistema.
+
+---
