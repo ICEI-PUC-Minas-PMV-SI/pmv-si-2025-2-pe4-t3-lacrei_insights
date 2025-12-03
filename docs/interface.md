@@ -273,7 +273,8 @@ PostgreSQL → Python API → [Extração → Transformação → Carga] → Ama
 
 **Requisitos Atendidos:** RF-03, RF-09
 
-<img width="2226" height="1327" alt="modeloDimensional" src="https://github.com/user-attachments/assets/0efa37bd-84d8-4529-b30c-7c4b9c776737" />
+<img width="2226" height="1327" alt="modeloDimensional" src="https://github.com/user-attachments/assets/c5e27a27-3a90-45a9-a908-ac32c2929c6a" />
+
 
 
 **Descrição do Diagrama (DBDiagram):**
@@ -285,6 +286,7 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 **`fact_lacreisaude_appointments`** (centro do schema)
 - Campos chave:
   - `appointment_sk` (PK, INT)
+  - `appointment_fingerprint` (VARCHAR)
   - `created_date_sk` (FK para dim_date, INT NN)
   - `appointment_date_sk` (FK para dim_date, INT NN)
   - `status` (VARCHAR, NN)
@@ -301,6 +303,7 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 
 **1. `dim_lacreisaude_patient`** (esquerda inferior)
 - `patient_sk` (PK)
+- `patient_key` (VARCHAR)
 - `created_at`, `first_name` (NULL), `last_name` (NULL)
 - `birth_date`, `is_active`
 - `profile_type`, `ethnic_group`
