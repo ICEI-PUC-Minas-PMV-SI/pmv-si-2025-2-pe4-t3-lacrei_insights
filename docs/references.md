@@ -16,9 +16,9 @@
 
 [8] INMON, Bill. Building the Data Warehouse. 4. ed. New York: Wiley, 2005.
 
-[10] METABASE. Metabase Documentation. Disponível em: https://www.metabase.com/learn. Acesso em: 30 nov. 2025.
+[9] METABASE. Metabase Documentation. Disponível em: https://www.metabase.com/learn. Acesso em: 30 nov. 2025.
 
-[13] PUC MINAS. Diretrizes para Projetos de Extensão. Belo Horizonte: PUC Minas, 2025.
+[10] PUC MINAS. Diretrizes para Projetos de Extensão. Belo Horizonte: PUC Minas, 2025.
 
 
 
