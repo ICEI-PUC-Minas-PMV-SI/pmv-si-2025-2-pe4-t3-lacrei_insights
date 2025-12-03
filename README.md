@@ -13,7 +13,7 @@
 A plataforma Lacrei Insights está disponível para uso no link abaixo:
 
 🔗 Acesse a Aplicação:
-👉 http://44.197.116.219/login
+👉 (http://18.212.222.62/dashboard)
 
 ---
 
