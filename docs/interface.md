@@ -255,32 +255,6 @@ PostgreSQL → Python API → [Extração → Transformação → Carga] → Ama
 - Verde-água: Componentes Lacrei
 - Fundo: Bege claro
 
-```
-┌─────────────────────────────────────────────────┐
-│                                                 │
-│                [OVERLAY ESCURO]                 │
-│                                                 │
-│     ┌─────────────────────────────────┐         │
-│     │  ⚠️  Atualizar Dados            │ [X]     │
-│     ├─────────────────────────────────┤         │
-│     │                                 │         │
-│     │  Deseja executar o processo de  │         │
-│     │  atualização do ETL?            │         │
-│     │                                 │         │
-│     │  Isso pode levar alguns minutos.│         │
-│     │                                 │         │
-│     │  Etapas:                        │         │
-│     │  ✓ Extração (Staging 1)        │         │
-│     │  ✓ Transformação (Staging 2)   │         │
-│     │  ✓ Modelagem (Models)          │         │
-│     │  ✓ Agregação (Marts)           │         │
-│     │                                 │         │
-│     │  [ CANCELAR ]  [ CONFIRMAR ]   │         │
-│     │                                 │         │
-│     └─────────────────────────────────┘         │
-│                                                 │
-└─────────────────────────────────────────────────┘
-```
 
 **Estados do Modal:**
 
