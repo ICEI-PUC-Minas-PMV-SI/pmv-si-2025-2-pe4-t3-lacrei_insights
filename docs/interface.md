@@ -273,7 +273,7 @@ PostgreSQL → Python API → [Extração → Transformação → Carga] → Ama
 
 **Requisitos Atendidos:** RF-03, RF-09
 
-<img width="2226" height="1327" alt="data" src="https://github.com/user-attachments/assets/b41d106f-cca1-4323-8432-f403d4c18a22" />
+<img width="2226" height="1327" alt="modeloDimensional" src="https://github.com/user-attachments/assets/0efa37bd-84d8-4529-b30c-7c4b9c776737" />
 
 
 **Descrição do Diagrama (DBDiagram):**
@@ -294,7 +294,8 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
   - `patient_sk` (FK, INT NN)
   - `clinic_sk` (FK, INT)
   - `report_sk` (FK, INT)
-  - `cancellation_sk` (FK, INT)
+  - `cancellation_reason` (TIMESTAMP)
+  - `cancellation_created_at` (VARCHAR)
 
 **Dimensões (Star Schema):**
 
@@ -332,11 +333,6 @@ O diagrama mostra a **modelagem dimensional completa** do Data Warehouse:
 - `created_at` (TIMESTAMP)
 - `feedback` (VARCHAR)
 - `evaluation` (INT) - nota de avaliação
-
-**6. `dim_lacreisaude_cancellation`** (direita inferior)
-- `cancellation_sk` (PK)
-- `created_at` (TIMESTAMP)
-- `reason` (VARCHAR) - motivo do cancelamento
 
 **Relacionamentos (Foreign Keys):**
 - Todas as dimensões conectadas à tabela fato
