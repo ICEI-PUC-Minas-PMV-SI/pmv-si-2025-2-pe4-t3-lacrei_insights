@@ -162,37 +162,6 @@ label {
 
 ---
 
-# ## 🖼️ 5. Iconografia
-
-A iconografia segue princípios de:
-
-* **Simplicidade**
-* **Traços finos**
-* **Ícones universais e acessíveis**
-* Compatível com bibliotecas como *Lucide Icons* e *HeroIcons*
-
-### Ícones utilizados
-
-| Ícone        | Função                         | Exemplo           |
-| ------------ | ------------------------------ | ----------------- |
-| 🔄 Refresh   | Botão de rodar ETL             | `Rodar ETL`       |
-| 📊 Dashboard | Acessar Metabase               | `Abrir Dashboard` |
-| 🔑 Login     | Campos de autenticação         | Tela de login     |
-| 🚪 Logout    | Sair do sistema                | Botão “Sair”      |
-| ⚙️ Config    | Swagger / Documentação técnica | Botão Swagger     |
-
-CSS aplicado aos ícones:
-
-```css
-.icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-}
-```
-
----
-
 # ## 📦 6. Componentes Principais (CSS)
 
 Aqui estão alguns dos componentes centrais utilizados no sistema.
