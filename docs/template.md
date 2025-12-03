@@ -28,7 +28,7 @@ Todas as páginas do sistema seguem um layout padronizado, composto por:
       <span class="title">Lacrei Saúde BI</span>
     </div>
     <nav class="nav-actions">
-      <button class="btn-secondary">Swagger</button>
+      <button class="btn-secondary">Github</button>
       <button class="btn-primary-outline">Sair</button>
     </nav>
   </header>
