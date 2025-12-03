@@ -83,8 +83,8 @@ O design segue os seguintes princípios:
 
 ### 🧩 **Elementos fixos nas páginas**
 
-* Logo do sistema posicionado no topo esquerdo
-* Botões *Swagger* e *Sair* no topo direito
+* Logo do sistema 
+* Botões *Github* e *Sair* no topo direito
 * Cards para ações principais (Rodar ETL, Ver Dashboard)
 * Área central para Metabase / gráficos
 * Containers brancos sobre fundo verde-claro
