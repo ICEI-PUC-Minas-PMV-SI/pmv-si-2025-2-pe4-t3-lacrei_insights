@@ -729,7 +729,7 @@ Dashboards atualizados no Metabase
 
 ### Via Portal Web
 
-1. Acessar: http://44.197.116.219/
+1. Acessar: http://18.212.222.62/
 2. Fazer login
 3. Clicar em "Atualizar Dados"
 4. Aguardar conclusão do pipeline
