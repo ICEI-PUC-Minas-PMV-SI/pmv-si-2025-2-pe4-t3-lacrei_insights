@@ -7,6 +7,13 @@
 > **SEMESTRE:** 4º
 
 ---
+# 📚 Relatório para o APC
+
+Para acessar o relatório completo do APC clique abaixo:
+
+📄 <a href="guia_de_migracao.pdf" target="_blank"><strong>➡ Acessar Relatório APC (PDF)</strong></a>
+
+---
 
 ## 🚀 Acesso à Solução (Aplicação Final)
 
